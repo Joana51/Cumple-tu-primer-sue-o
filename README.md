@@ -25,3 +25,10 @@ El contenido e interacciones están en `app.js`. Los colores y el diseño en `st
 ## Seguridad y alcance
 
 El prototipo utiliza **únicamente datos ficticios**. No solicita claves ni se conecta a BCP o Yape. No transfiere ni bloquea fondos reales. Los cambios se conservan en `localStorage` del navegador en el dispositivo utilizado; no hay cuentas reales, sincronización ni backend. Evita introducir datos personales reales de menores en la demo. Los colores son una inspiración visual y no implican colaboración o aprobación oficial del banco.
+
+
+## Actualización visual (v3)
+- Primera visita: pantalla de bienvenida para elegir nombre, edad y avatar.
+- Identidad visual renovada: logotipo más juvenil, ajustes de tipografía, colores conservados.
+- El perfil permite seguir cambiando nombre, avatar e intereses.
+- Los datos son ficticios y quedan en el navegador. No hay aprendizaje automático activo ni APIs bancarias conectadas.
