@@ -1,34 +1,24 @@
-# Cumple tu primer sueño
+# Cumple tu primer sueño · V4
 
-Prototipo HTML/CSS/JavaScript para la Hackathon Women in Tech. Diseñado para adolescentes de 10 a 17 años que quieren aprender a ahorrar mediante metas personalizadas y acompañamiento familiar.
+Prototipo estático educativo de la Hackathon Women in Tech. Los datos son ficticios y se guardan únicamente en `localStorage` del navegador. No existe vinculación ni autorización de BCP o Yape.
 
-## Pantallas
+## Cambios V4
 
-- Inicio: saldo ficticio, ahorro y sueño principal.
-- Mis sueños: creación de metas, simulación de aportes y ahorro protegido.
-- Aprende: microaprendizaje y logros.
-- Familia: seguimiento, felicitaciones, resumen y autorización simulada de retiros.
-- Mi perfil: nombre, edad, avatar, intereses, tema de colores y configuración.
+- **Moti:** mascota original diseñada en SVG dentro del código, con identidad morada y menta.
+- **Bienvenida personalizada:** solicita nombre, edad (10 a 17) y avatar.
+- **Sin metas prefijadas:** la primera vez el usuario elige qué quiere conseguir, fija precio y plazo.
+- **Aprendizaje adaptado:** lenguaje y ejercicio diferente para 10 a 13 y 14 a 17 años.
+- **Sin cambios estructurales** a «Tu dinero de un vistazo».
+- Se conservan metas personalizadas previas. Solo se eliminan las dos metas ficticias originales si estaban intactas.
 
-## Publicación con GitHub Pages
+## Publicar en GitHub Pages
 
-1. Crea un repositorio público en GitHub (por ejemplo, `cumple-tu-primer-sueno`).
-2. Sube **los tres archivos** `index.html`, `styles.css` y `app.js` a la raíz del repositorio.
-3. Ve a **Settings > Pages**.
-4. En **Build and deployment**, elige **Deploy from a branch** y selecciona **main** y **/(root)**. Guarda.
-5. GitHub mostrará la dirección pública de la web, normalmente `https://TU-USUARIO.github.io/cumple-tu-primer-sueno/`.
+Subir `index.html`, `styles.css`, `app.js`, `README.md` a la raíz del repositorio. En GitHub: **Settings → Pages → Deploy from a branch → main → / (root)**.
 
-## Para editar
+## Probar bienvenida desde cero
 
-El contenido e interacciones están en `app.js`. Los colores y el diseño en `styles.css`. El contenedor HTML está en `index.html`.
+En la sección «Mi perfil», hacer clic en «Restablecer datos de demostración». Si ya creaste metas reales en esta demo, no reinicies sin antes tomar nota, porque el botón borra los datos locales. Para ver la experiencia desde cero también puedes abrir el enlace en una ventana privada.
 
-## Seguridad y alcance
+## Seguridad
 
-El prototipo utiliza **únicamente datos ficticios**. No solicita claves ni se conecta a BCP o Yape. No transfiere ni bloquea fondos reales. Los cambios se conservan en `localStorage` del navegador en el dispositivo utilizado; no hay cuentas reales, sincronización ni backend. Evita introducir datos personales reales de menores en la demo. Los colores son una inspiración visual y no implican colaboración o aprobación oficial del banco.
-
-
-## Actualización visual (v3)
-- Primera visita: pantalla de bienvenida para elegir nombre, edad y avatar.
-- Identidad visual renovada: logotipo más juvenil, ajustes de tipografía, colores conservados.
-- El perfil permite seguir cambiando nombre, avatar e intereses.
-- Los datos son ficticios y quedan en el navegador. No hay aprendizaje automático activo ni APIs bancarias conectadas.
+El ahorro protegido es solo una simulación, y la vista familiar no aplica una autenticación real. No uses nombres completos, información bancaria o datos sensibles de menores en el prototipo público.
