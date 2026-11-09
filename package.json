@@ -1,0 +1,36 @@
+{
+  "name": "cumple-tu-primer-sueno",
+  "version": "5.0.0",
+  "private": true,
+  "engines": {
+    "node": "^20.19.0 || ^22.12.0 || >=24.0.0"
+  },
+  "scripts": {
+    "start": "ng serve --host 0.0.0.0 --port 4200",
+    "build": "ng build",
+    "build:pages": "ng build --base-href /Cumple-tu-primer-sue-o/ --deploy-url /Cumple-tu-primer-sue-o/site-assets/ && node scripts/prepare-pages.mjs",
+    "test": "playwright test",
+    "format": "prettier --write 'src/**/*.{ts,html,css}' 'tests/**/*.ts' '*.json' 'playwright.config.ts'"
+  },
+  "dependencies": {
+    "@angular/common": "~21.2.26",
+    "@angular/compiler": "~21.2.26",
+    "@angular/core": "~21.2.26",
+    "@angular/forms": "~21.2.26",
+    "@angular/platform-browser": "~21.2.26",
+    "rxjs": "~7.8.2",
+    "tslib": "^2.8.1"
+  },
+  "overrides": {
+    "glob": "^14.0.2",
+    "minimatch": "^11.0.1"
+  },
+  "devDependencies": {
+    "@angular/build": "~21.2.26",
+    "@angular/cli": "~21.2.26",
+    "@angular/compiler-cli": "~21.2.26",
+    "@playwright/test": "^1.58.0",
+    "prettier": "^3.9.10",
+    "typescript": "~5.9.3"
+  }
+}

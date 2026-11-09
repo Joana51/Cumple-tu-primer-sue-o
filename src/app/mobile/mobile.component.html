@@ -1,0 +1,1073 @@
+<div class="mobile-app" [attr.data-age]="store.ageBand()" [class.home-screen]="page() === 'inicio'">
+  <div class="phone-status" aria-hidden="true">
+    <b>9:41</b>
+    <div class="dynamic-island"></div>
+    <div class="status-icons">
+      <svg viewBox="0 0 18 14">
+        <path d="M2 12v-2m4 2V7m4 5V4m4 8V1" stroke="currentColor" stroke-width="2.4" /></svg
+      ><svg viewBox="0 0 18 14">
+        <path
+          d="M1 4q8-7 16 0M4 7q5-4 10 0m-7 3q2-2 4 0"
+          stroke="currentColor"
+          stroke-width="2"
+          fill="none"
+        />
+        <circle cx="9" cy="12" r="1" /></svg
+      ><svg viewBox="0 0 25 14">
+        <rect x="1" y="2" width="20" height="10" rx="3" stroke="currentColor" fill="none" />
+        <rect x="3" y="4" width="16" height="6" rx="1" />
+        <path d="M23 5v4" stroke="currentColor" stroke-width="2" />
+      </svg>
+    </div>
+  </div>
+  <aside class="independence-notice" aria-label="Aviso de independencia del prototipo">
+    <app-icon name="info" />
+    <div>
+      <strong>Mi primer sueño · Demo independiente</strong>
+    </div>
+  </aside>
+  <div class="phone-content" [inert]="modal() ? true : null">
+    <header class="mobile-header">
+      <button class="profile-button" (click)="go('perfil')" aria-label="Abrir mi perfil">
+        <span class="avatar">{{
+          state.profile.avatar.length > 2
+            ? state.profile.avatar
+            : state.profile.avatar === 'A'
+              ? state.profile.name.charAt(0).toUpperCase()
+              : state.profile.avatar
+        }}</span>
+      </button>
+      <div>
+        <span class="greeting">{{
+          page() === 'familia' ? 'VISTA FAMILIAR · DEMO' : 'QUÉ BUENO VERTE'
+        }}</span>
+        <h2>{{ page() === 'inicio' ? '¡Hola, ' + state.profile.name + '!' : pageTitle }}</h2>
+      </div>
+      <button
+        class="icon-button notification-button"
+        aria-label="Ver notificaciones"
+        (click)="open('notifications')"
+      >
+        <app-icon name="bell" />
+        @if (store.pending().length || state.praise) {
+          <i></i>
+        }
+      </button>
+    </header>
+
+    <main class="mobile-scroll" #scroll aria-label="Contenido de la aplicación">
+      @if (store.persistenceWarning()) {
+        <p class="inline-warning">{{ store.persistenceWarning() }}</p>
+      }
+      @switch (page()) {
+        @case ('inicio') {
+          <section class="balance-card">
+            <div class="row">
+              <span>Tu dinero, de un vistazo</span
+              ><button
+                class="icon-button light"
+                (click)="showBalance = !showBalance"
+                [attr.aria-label]="showBalance ? 'Ocultar saldos' : 'Mostrar saldos'"
+              >
+                <app-icon name="eye" />
+              </button>
+            </div>
+            <span class="balance-label">Disponible para ti</span>
+            <div class="balance-amount">{{ showBalance ? money(state.balance) : 'S/ ••••' }}</div>
+            <div class="balance-bottom">
+              <span
+                ><app-icon name="shield" /><span
+                  >En tus sueños <b>{{ showBalance ? money(store.saved()) : 'S/ ••••' }}</b></span
+                ></span
+              ><span class="balance-demo">DEMO</span>
+            </div>
+            <div class="balance-decoration" aria-hidden="true"></div>
+          </section>
+          <div class="section-heading">
+            <h2>{{ store.ageBand() === 'teen' ? 'Tu próxima meta' : 'Tu próximo gran sueño' }}</h2>
+            <button class="text-button" (click)="go('suenos')">
+              Ver todos<app-icon name="chevron" />
+            </button>
+          </div>
+          @if (featuredGoal; as goal) {
+            <app-goal-card
+              [goal]="goal"
+              (deposit)="open('deposit', $event)"
+              (details)="open('detail', $event)"
+            />
+          } @else {
+            <div class="empty-card">
+              <app-dream-art kind="star" label="Tu primer sueño" />
+              <h3>¿Qué te gustaría conseguir?</h3>
+              <p>Tú eliges el sueño. Le damos un plan juntos.</p>
+              <button class="primary full" (click)="open('create')">
+                <app-icon name="plus" />Crear mi primer sueño
+              </button>
+            </div>
+          }
+          <button class="family-banner" (click)="go('familia')">
+            <div class="family-avatars"><span>A</span><span>♡</span></div>
+            <div>
+              <strong>Los sueños crecen en familia</strong>
+              <p>Tu familia te acompaña en cada paso.</p>
+            </div>
+            <app-icon name="chevron" />
+          </button>
+          @if (state.praise) {
+            <div class="praise-note">
+              <app-icon name="heart" />
+              <p>{{ state.praise }}</p>
+            </div>
+          }
+          <div class="section-heading">
+            <h2>Una idea para hoy</h2>
+            <span class="tiny-pill">2 MIN</span>
+          </div>
+          <button class="lesson-preview" (click)="startLesson(lessons[0])">
+            <span class="feature-icon peach"><app-icon name="book" /></span>
+            <div>
+              <strong>{{ lessons[0].title }}</strong>
+              <p>Pequeñas decisiones, grandes aprendizajes.</p>
+            </div>
+            <app-icon name="chevron" />
+          </button>
+          <div class="section-heading"><h2>Tus últimos pasos</h2></div>
+          <div class="activity-list">
+            @for (h of state.history.slice(0, 3); track $index) {
+              <div class="activity-row">
+                <span class="activity-icon" [class.withdrawal]="h.amount < 0"
+                  ><app-icon
+                    [name]="
+                      h.kind === 'family'
+                        ? 'heart'
+                        : h.kind === 'achievement'
+                          ? 'trophy'
+                          : h.amount < 0
+                            ? 'down'
+                            : 'plus'
+                    "
+                /></span>
+                <div>
+                  <strong>{{ h.text }}</strong
+                  ><small>{{ h.date }}</small>
+                </div>
+                @if (h.amount) {
+                  <b [class.negative]="h.amount < 0"
+                    >{{ h.amount > 0 ? '+' : '−' }}{{ money(Math.abs(h.amount)) }}</b
+                  >
+                }
+              </div>
+            } @empty {
+              <p class="muted">Tus pequeños pasos aparecerán aquí.</p>
+            }
+          </div>
+        }
+
+        @case ('suenos') {
+          <div class="page-intro">
+            <span class="eyebrow">TÚ PONES EL SUEÑO</span>
+            <h1>Hagamos que pase<span class="orange">.</span></h1>
+            <p>Un plan a tu medida. Un aporte a la vez.</p>
+          </div>
+          <button class="primary full" (click)="open('create')">
+            <app-icon name="plus" />Crear un nuevo sueño
+          </button>
+          <div class="section-heading">
+            <h2>En camino</h2>
+            <span class="tiny-pill"
+              >{{ store.activeGoals().length }}
+              {{ store.activeGoals().length === 1 ? 'SUEÑO' : 'SUEÑOS' }}</span
+            >
+          </div>
+          <div class="goals-stack">
+            @for (g of store.activeGoals(); track g.id) {
+              <app-goal-card
+                [goal]="g"
+                (deposit)="open('deposit', $event)"
+                (details)="open('detail', $event)"
+              />
+            } @empty {
+              @if (store.completedGoals().length) {
+                <div class="info-card">
+                  <app-icon name="trophy" />
+                  <p>Ya cumpliste tus metas. Tu próximo sueño puede empezar cuando quieras.</p>
+                </div>
+              } @else {
+                <div class="empty-card">
+                  <app-dream-art kind="star" label="Un mundo de posibilidades" />
+                  <h3>Tu primer sueño empieza aquí</h3>
+                  <p>Puede ser una bicicleta, algo para tu hobby o una experiencia. Tú decides.</p>
+                </div>
+              }
+            }
+          </div>
+          @if (store.completedGoals().length) {
+            <div class="section-heading">
+              <h2>Sueños cumplidos</h2>
+              <span class="tiny-pill green">{{ store.completedGoals().length }} LOGROS</span>
+            </div>
+            <div class="goals-stack completed-goals">
+              @for (g of store.completedGoals(); track g.id) {
+                <app-goal-card [goal]="g" (details)="open('detail', $event)" />
+              }
+            </div>
+          }
+          <div class="info-card">
+            <app-icon name="info" />
+            <p>
+              Puedes ajustar el costo y el plazo de cada meta. Los planes también cambian contigo.
+            </p>
+          </div>
+        }
+
+        @case ('protegido') {
+          <section class="protection-hero">
+            <span class="protection-emblem"><app-icon name="shield" /></span
+            ><span class="eyebrow">CUIDA LO QUE QUIERES LOGRAR</span>
+            <h1>Tu sueño tiene<br />su propio espacio.</h1>
+            <p>
+              {{
+                store.ageBand() === 'junior'
+                  ? 'Lo que guardas para tu sueño no se mezcla con lo que puedes gastar hoy.'
+                  : 'Separa tu ahorro del dinero de uso diario y mantén el compromiso con tu meta.'
+              }}
+            </p>
+            <div class="protected-total">
+              <small>AHORRO PROTEGIDO</small><strong>{{ money(store.protectedSaved()) }}</strong>
+            </div>
+          </section>
+          <div class="section-heading"><h2>Así lo cuidamos juntos</h2></div>
+          <div class="protection-steps">
+            <div>
+              <span>1</span>
+              <div>
+                <strong>Tú eliges el compromiso</strong>
+                <p>Al crear una meta, decides si separar tu ahorro.</p>
+              </div>
+            </div>
+            <div>
+              <span>2</span>
+              <div>
+                <strong>Tu dinero tiene un propósito</strong>
+                <p>Los aportes salen de tu saldo disponible y se reservan para esa meta.</p>
+              </div>
+            </div>
+            <div>
+              <span>3</span>
+              <div>
+                <strong>Hay espacio para imprevistos</strong>
+                <p>
+                  Antes de llegar al 100%, puedes pedir un retiro con autorización de tu familia. Al
+                  completar la meta, puedes usarlo.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="section-heading"><h2>Tus ahorros reservados</h2></div>
+          @for (g of state.goals; track g.id) {
+            @if (g.protected) {
+              <button class="reserved-goal" (click)="open('detail', g)">
+                <span class="feature-icon"><app-icon name="lock" /></span>
+                <div>
+                  <strong>{{ g.name }}</strong
+                  ><small>{{ money(g.saved) }} de {{ money(g.target) }}</small>
+                </div>
+                <app-icon name="chevron" />
+              </button>
+            }
+          }
+          @if (!store.protectedSaved()) {
+            <p class="muted">Tus aportes a metas protegidas aparecerán aquí.</p>
+          }
+          @for (r of store.pending(); track r.id) {
+            <div class="pending-notice">
+              <app-icon name="clock" />
+              <div>
+                <strong>Tu solicitud está en camino</strong>
+                <p>
+                  {{ money(r.amount) }} de {{ r.goalName }}. El dinero sigue reservado hasta que tu
+                  familia autorice.
+                </p>
+                <button class="text-button" (click)="go('familia')">
+                  Ver en familia<app-icon name="arrow" />
+                </button>
+              </div>
+            </div>
+          }
+          <div class="info-card">
+            <app-icon name="info" />
+            <p>
+              Esta protección es una simulación educativa. No se bloquea dinero real ni existe
+              conexión con BCP o Yape.
+            </p>
+          </div>
+        }
+
+        @case ('aprende') {
+          <div class="learning-hero">
+            <div class="eyebrow">{{ store.bandLabel() }}</div>
+            <h1>
+              {{
+                store.ageBand() === 'junior'
+                  ? '¡Vamos a descubrir!'
+                  : store.ageBand() === 'teen'
+                    ? 'Decide con más herramientas.'
+                    : 'Tu dinero. Tus decisiones.'
+              }}
+            </h1>
+            <p>
+              {{
+                store.ageBand() === 'junior'
+                  ? 'Pequeñas historias para aprender a cuidar lo que tienes.'
+                  : 'Ideas prácticas para las decisiones que tomas todos los días.'
+              }}
+            </p>
+            <app-icon name="spark" />
+          </div>
+          <div class="segmented phone-segmented">
+            <button [class.active]="learnTab === 'lessons'" (click)="learnTab = 'lessons'">
+              Mis actividades</button
+            ><button
+              [class.active]="learnTab === 'achievements'"
+              (click)="learnTab = 'achievements'"
+            >
+              Mis logros
+            </button>
+          </div>
+          @if (learnTab === 'lessons') {
+            <p class="learning-caption">Hecho para tu etapa. Sin prisa, sin compararte.</p>
+            @for (l of lessons; track l.id; let i = $index) {
+              <button class="learning-card" (click)="startLesson(l)">
+                <div class="row">
+                  <span class="lesson-number">0{{ i + 1 }}</span
+                  ><span class="tiny-pill">{{
+                    state.lessons.includes(l.id) ? 'COMPLETADO ✓' : '2 MIN · UNA DECISIÓN'
+                  }}</span>
+                </div>
+                <h3>{{ l.title }}</h3>
+                <p>{{ l.concept }}</p>
+                <span class="lesson-link"
+                  >{{ state.lessons.includes(l.id) ? 'Volver a explorar' : 'Empezar actividad'
+                  }}<app-icon name="arrow"
+                /></span>
+              </button>
+            }
+          } @else {
+            <p class="learning-caption">Reconocemos tus pasos. El monto no define tu esfuerzo.</p>
+            <div class="badges-grid">
+              @for (badge of badges; track badge.title) {
+                <div class="badge-card" [class.earned]="badge.done">
+                  <span><app-icon [name]="badge.icon" /></span><strong>{{ badge.title }}</strong
+                  ><small>{{
+                    badge.done ? '¡Ya es parte de tu camino!' : 'Por descubrir, a tu ritmo'
+                  }}</small>
+                </div>
+              }
+            </div>
+          }
+          <div class="info-card">
+            <app-icon name="heart" />
+            <p>No hay rachas que perder ni multas por pausar. Aprender también es un logro.</p>
+          </div>
+        }
+
+        @case ('familia') {
+          <div class="family-hero">
+            <div class="family-heart"><app-icon name="heart" /></div>
+            <span class="eyebrow">JUNTOS PARA CRECER</span>
+            <h1>Acompañar.<br />Confiar. Celebrar.</h1>
+            <p>Su sueño es suyo. Tu apoyo hace la diferencia.</p>
+          </div>
+          <div class="family-profile">
+            <span class="avatar">{{ state.profile.name.charAt(0) }}</span>
+            <div>
+              <strong>El camino de {{ state.profile.name }}</strong
+              ><small
+                >{{ state.profile.age }} años · {{ store.activeGoals().length }} metas en camino ·
+                {{ store.completedGoals().length }} cumplidas</small
+              >
+            </div>
+            <span class="tiny-pill green">EN FAMILIA</span>
+          </div>
+          <div class="family-summary">
+            <span
+              >Ahorro en sus metas<strong>{{ money(store.saved()) }}</strong></span
+            ><button class="text-button" (click)="open('summary')">
+              Ver resumen<app-icon name="chevron" />
+            </button>
+          </div>
+          <div class="family-actions">
+            <button
+              class="secondary"
+              (click)="store.praise(); notify('Mensaje enviado. Puedes verlo en Inicio.')"
+            >
+              <app-icon name="heart" />Enviar ánimo</button
+            ><button
+              class="primary"
+              (click)="open('family-deposit')"
+              [disabled]="!state.goals.some(incomplete)"
+            >
+              <app-icon name="plus" />Aportar
+            </button>
+          </div>
+          <div class="section-heading">
+            <h2>Decisiones en familia</h2>
+            <span class="tiny-pill">{{ store.pending().length }} PENDIENTES</span>
+          </div>
+          @for (r of store.pending(); track r.id) {
+            <article class="request-card">
+              <span class="pill"><app-icon name="clock" />Solicitud de retiro</span>
+              <h3>
+                {{ money(r.amount) }} <span>de {{ r.goalName }}</span>
+              </h3>
+              <p class="request-reason">“{{ r.reason }}”</p>
+              <p>
+                El ahorro se mantiene reservado hasta que autorices. Conversen sobre cómo ajustar el
+                plan.
+              </p>
+              <div class="row">
+                <button class="secondary" (click)="resolve(r.id, false)">Conversar primero</button
+                ><button class="primary" (click)="resolve(r.id, true)">Autorizar retiro</button>
+              </div>
+            </article>
+          } @empty {
+            <div class="no-requests">
+              <span><app-icon name="check" /></span>
+              <div>
+                <strong>Todo en orden por aquí</strong>
+                <p>No hay solicitudes de retiro pendientes.</p>
+              </div>
+            </div>
+          }
+          <div class="section-heading"><h2>Pequeños pasos, grandes avances</h2></div>
+          <div class="activity-list">
+            @for (h of state.history.slice(0, 5); track $index) {
+              <div class="activity-row">
+                <span class="activity-icon"
+                  ><app-icon
+                    [name]="
+                      h.kind === 'family' ? 'heart' : h.kind === 'achievement' ? 'trophy' : 'shield'
+                    "
+                /></span>
+                <div>
+                  <strong>{{ h.text }}</strong
+                  ><small>{{ h.date }}</small>
+                </div>
+              </div>
+            } @empty {
+              <p class="muted">Aquí celebrarás sus primeros pasos.</p>
+            }
+          </div>
+          <div class="info-card">
+            <app-icon name="info" />
+            <p>Acompañamos hábitos y decisiones, sin calificar a nadie por cuánto ahorra.</p>
+          </div>
+        }
+
+        @case ('perfil') {
+          <div class="profile-intro">
+            <span class="avatar large">{{
+              state.profile.avatar === 'A' ? state.profile.name.charAt(0) : state.profile.avatar
+            }}</span>
+            <h1>Este espacio es tuyo.</h1>
+            <p>Tu nombre, tu estilo, tus próximos sueños.</p>
+          </div>
+          <form class="profile-form" (ngSubmit)="saveProfile()">
+            <label class="field-label" for="profile-name">¿Cómo te llamamos?</label
+            ><input
+              id="profile-name"
+              name="profileName"
+              [(ngModel)]="profileName"
+              maxlength="24"
+              required
+            />
+            <label class="field-label" for="profile-age">Tu edad</label
+            ><select id="profile-age" name="profileAge" [(ngModel)]="profileAge">
+              @for (age of ages; track age) {
+                <option [ngValue]="age">{{ age }} años</option>
+              }
+            </select>
+            <span class="field-label">Tu avatar</span>
+            <div class="avatar-choices">
+              @for (a of ['A', '✦', '🦊', '🐱', '🐼', '🐸']; track a) {
+                <button
+                  type="button"
+                  [class.active]="profileAvatar === a"
+                  [attr.aria-pressed]="profileAvatar === a"
+                  [attr.aria-label]="a === 'A' ? 'Usar mi inicial' : 'Avatar ' + a"
+                  (click)="profileAvatar = a"
+                >
+                  {{ a === 'A' ? profileName.charAt(0) : a }}
+                </button>
+              }
+            </div>
+            <button class="primary full" type="submit">
+              Guardar mi perfil<app-icon name="check" />
+            </button>
+          </form>
+          <div class="profile-settings">
+            <h3>Mi experiencia</h3>
+            <label class="switch-row" for="notifications-setting"
+              ><span
+                >Notificaciones de metas y logros<small
+                  >Se muestran dentro de esta demo.</small
+                ></span
+              ><input
+                id="notifications-setting"
+                type="checkbox"
+                [ngModel]="state.profile.notifications"
+                (ngModelChange)="store.profile({ notifications: $event })" /></label
+            ><label class="field-label" for="interest">Mis intereses</label
+            ><select
+              id="interest"
+              [ngModel]="state.profile.interest"
+              (ngModelChange)="store.profile({ interest: $event })"
+            >
+              @for (
+                interest of [
+                  'Tecnología',
+                  'Música',
+                  'Deportes',
+                  'Arte',
+                  'Videojuegos',
+                  'Viajar',
+                  'Otra cosa',
+                ];
+                track interest
+              ) {
+                <option>{{ interest }}</option>
+              }
+            </select>
+          </div>
+          <div class="info-card">
+            <app-icon name="lock" />
+            <p>Tus datos se guardan solo en este navegador.</p>
+          </div>
+        }
+      }
+      <div class="app-disclaimer">Prototipo educativo · Dinero ficticio</div>
+    </main>
+    <nav class="mobile-navigation" aria-label="Navegación principal">
+      @for (item of nav; track item.page) {
+        <button
+          [class.active]="page() === item.page"
+          [attr.aria-label]="item.label"
+          [attr.aria-current]="page() === item.page ? 'page' : null"
+          (click)="go(item.page)"
+        >
+          <span class="nav-icon"
+            ><app-icon [name]="item.icon" />
+            @if (item.page === 'familia' && store.pending().length) {
+              <i>{{ store.pending().length }}</i>
+            }</span
+          ><span>{{ item.label }}</span>
+        </button>
+      }
+    </nav>
+  </div>
+  <div class="home-indicator" aria-hidden="true"><span></span></div>
+  @if (toast()) {
+    <div class="app-toast" role="status"><app-icon name="check" />{{ toast() }}</div>
+  }
+
+  @if (modal()) {
+    <div class="sheet-backdrop" (click)="close()"></div>
+    <section
+      class="app-sheet"
+      #sheet
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sheet-title"
+      tabindex="-1"
+      (keydown)="keydown($event)"
+    >
+      <div class="sheet-grabber" aria-hidden="true"></div>
+      <header class="sheet-header">
+        <h2 id="sheet-title">{{ modalTitle }}</h2>
+        <button class="icon-button" aria-label="Cerrar ventana" (click)="close()">
+          <app-icon name="close" />
+        </button>
+      </header>
+      <div class="sheet-content">
+        @switch (modal()) {
+          @case ('create') {
+            <p class="sheet-description">
+              {{
+                editingId
+                  ? 'Puedes adaptar tu plan. Cada cambio es una nueva decisión.'
+                  : 'Algo que te emocione. Un plan para conseguirlo.'
+              }}
+            </p>
+            <form (ngSubmit)="saveGoal()">
+              <span class="field-label">¿Qué te gustaría conseguir?</span>
+              <div class="art-choices">
+                @for (a of artChoices; track a.art) {
+                  <button
+                    type="button"
+                    [class.active]="form.art === a.art"
+                    [attr.aria-label]="a.name"
+                    [attr.aria-pressed]="form.art === a.art"
+                    (click)="chooseArt(a)"
+                  >
+                    <app-dream-art [kind]="a.art" [label]="a.name" /><span>{{ a.name }}</span>
+                  </button>
+                }
+              </div>
+              <label class="field-label" for="goal-name">Nombre de tu sueño</label
+              ><input
+                id="goal-name"
+                name="name"
+                [(ngModel)]="form.name"
+                placeholder="Ej. Mi primera tablet"
+                required
+                maxlength="42"
+              />
+              <div class="form-columns">
+                <div>
+                  <label class="field-label" for="goal-target">¿Cuánto cuesta? (S/)</label
+                  ><input
+                    id="goal-target"
+                    name="target"
+                    type="number"
+                    min="1"
+                    max="100000"
+                    step="0.01"
+                    [(ngModel)]="form.target"
+                    required
+                  />
+                </div>
+                <div>
+                  <label class="field-label" for="goal-weeks">Plazo en semanas</label
+                  ><input
+                    id="goal-weeks"
+                    name="weeks"
+                    type="number"
+                    min="1"
+                    max="260"
+                    step="1"
+                    [(ngModel)]="form.weeks"
+                    required
+                  />
+                </div>
+              </div>
+              <div class="suggestion">
+                <app-icon name="clock" /><span
+                  >Un plan posible: <strong>{{ money(weeklySuggestion) }} por semana.</strong> Es
+                  una guía, no una obligación.</span
+                >
+              </div>
+              <label class="protect-toggle" for="goal-protect"
+                ><app-icon name="shield" /><span
+                  ><strong>Proteger mi ahorro</strong
+                  ><small>{{
+                    editingId && selected?.protected && (selected?.saved || 0) > 0
+                      ? 'La protección se mantiene mientras tengas fondos reservados.'
+                      : 'Retiro anticipado con autorización familiar.'
+                  }}</small></span
+                ><input
+                  id="goal-protect"
+                  type="checkbox"
+                  name="protected"
+                  [(ngModel)]="form.protected"
+                  [disabled]="!!editingId && !!selected?.protected && (selected?.saved || 0) > 0"
+              /></label>
+              @if (error) {
+                <p class="form-error" role="alert">{{ error }}</p>
+              }
+              <button class="primary full" type="submit">
+                {{ editingId ? 'Actualizar mi plan' : 'Empezar mi sueño' }}<app-icon name="arrow" />
+              </button>
+            </form>
+          }
+          @case ('detail') {
+            @if (selected; as g) {
+              <app-dream-art class="detail-art" [kind]="g.art" [label]="g.name" />
+              <h3 class="detail-name">{{ g.name }}</h3>
+              <div class="detail-amount">
+                {{ money(completed(g) ? g.target : g.saved) }}
+                <small>{{
+                  completed(g) ? 'Meta cumplida · Logro conservado' : 'de ' + money(g.target)
+                }}</small>
+              </div>
+              <div class="progress-track"><span [style.width.%]="progress(g)"></span></div>
+              <p class="detail-caption">
+                {{ progress(g) }}% de tu meta · {{ g.weeks }} semanas de plan
+              </p>
+              <div class="detail-condition">
+                <app-icon [name]="g.protected ? 'shield' : 'wallet'" />
+                <div>
+                  <strong>{{
+                    completed(g)
+                      ? 'Este logro ya es parte de tu historia'
+                      : g.protected
+                        ? 'Tu compromiso de ahorro'
+                        : 'Una meta flexible'
+                  }}</strong>
+                  <p>
+                    {{
+                      completed(g)
+                        ? g.saved > 0
+                          ? '¡Llegaste! Puedes devolver el ahorro a tu saldo para usarlo en tu sueño. Tu meta seguirá cumplida.'
+                          : 'Ya devolviste este ahorro a tu saldo disponible. Tu meta y tu insignia se conservan.'
+                        : g.protected
+                          ? 'Antes de completar la meta, los retiros requieren autorización familiar. Tu dinero sigue reservado mientras esperas.'
+                          : 'Puedes devolver dinero al saldo disponible cuando lo necesites.'
+                    }}
+                  </p>
+                </div>
+              </div>
+              @if (!completed(g)) {
+                <div class="detail-weekly">
+                  Para el monto restante, podrías separar
+                  <strong
+                    >{{ money(Math.ceil(((g.target - g.saved) / g.weeks) * 100) / 100) }} por
+                    semana</strong
+                  >
+                  durante {{ g.weeks }} semanas desde hoy.
+                </div>
+                <button class="primary full" (click)="open('deposit', g)">
+                  <app-icon name="plus" />Agregar a mi sueño
+                </button>
+              } @else {
+                <div class="completed-funds">
+                  <span>Aún reservado para este sueño</span><strong>{{ money(g.saved) }}</strong>
+                </div>
+              }
+              <button
+                class="secondary full"
+                [disabled]="g.saved <= 0 || hasPending(g.id)"
+                (click)="open('withdraw', g)"
+              >
+                {{
+                  hasPending(g.id)
+                    ? 'Solicitud pendiente'
+                    : completed(g)
+                      ? g.saved > 0
+                        ? 'Usar mi ahorro para este sueño'
+                        : 'Ahorro devuelto al saldo'
+                      : g.protected
+                        ? 'Solicitar un retiro'
+                        : 'Retirar al saldo disponible'
+                }}
+              </button>
+              @if (!completed(g)) {
+                <button class="text-button centered" (click)="editGoal(g)">
+                  <app-icon name="edit" />Modificar mi meta</button
+                ><button class="text-button centered muted" (click)="open('cancel', g)">
+                  Cerrar esta meta
+                </button>
+              } @else {
+                <button class="primary full next-dream" (click)="open('create')">
+                  <app-icon name="plus" />Crear mi próximo sueño
+                </button>
+              }
+            }
+          }
+          @case ('deposit') {
+            <ng-container [ngTemplateOutlet]="depositForm" />
+          }
+          @case ('family-deposit') {
+            <ng-container [ngTemplateOutlet]="depositForm" />
+          }
+          @case ('withdraw') {
+            @if (selected; as g) {
+              <p class="sheet-description">
+                {{
+                  completed(g)
+                    ? 'Alcanzaste tu meta. Tu dinero está listo para ese sueño.'
+                    : g.protected
+                      ? 'Los imprevistos pasan. Tu familia puede ayudarte a ajustar el plan.'
+                      : 'Puedes ajustar tu ahorro cuando lo necesites.'
+                }}
+              </p>
+              <div class="amount-context">
+                <span>{{ g.name }}</span
+                ><strong>{{ money(g.saved) }} reservados</strong>
+              </div>
+              <form (ngSubmit)="withdraw()">
+                <label class="field-label" for="withdraw-amount">Monto a retirar (S/)</label
+                ><input
+                  id="withdraw-amount"
+                  name="amount"
+                  type="number"
+                  min="0.01"
+                  [max]="g.saved"
+                  step="0.01"
+                  [(ngModel)]="amount"
+                  required
+                />
+                @if (g.protected && !completed(g)) {
+                  <label class="field-label" for="withdraw-reason"
+                    >¿Para qué necesitas este dinero?</label
+                  ><textarea
+                    id="withdraw-reason"
+                    name="reason"
+                    rows="3"
+                    [(ngModel)]="reason"
+                    maxlength="180"
+                    required
+                    placeholder="Cuéntale a tu familia..."
+                  ></textarea>
+                }
+                <div class="suggestion">
+                  <app-icon name="info" />
+                  @if (completed(g)) {
+                    <span
+                      >Tu sueño seguirá cumplido al usar este ahorro. Conservas tu insignia y el
+                      registro de tu meta.</span
+                    >
+                  } @else {
+                    <span
+                      >Con este retiro tu avance sería de
+                      <strong
+                        >{{
+                          Math.max(0, Math.round(((g.saved - amount) / g.target) * 100))
+                        }}%</strong
+                      >. Puedes conversar y replantear tu meta.</span
+                    >
+                  }
+                </div>
+                @if (error) {
+                  <p class="form-error" role="alert">{{ error }}</p>
+                }
+                <button class="primary full" type="submit">
+                  {{
+                    g.protected && !completed(g)
+                      ? 'Enviar solicitud a mi familia'
+                      : 'Devolver a mi saldo disponible'
+                  }}
+                </button>
+              </form>
+            }
+          }
+          @case ('lesson') {
+            <span class="pill"><app-icon name="book" />{{ store.bandLabel() }}</span>
+            <h3 class="quiz-title">{{ lesson.title }}</h3>
+            <p class="lesson-concept">{{ lesson.concept }}</p>
+            <p class="quiz-question">{{ lesson.question }}</p>
+            <div class="quiz-choices">
+              @for (c of lesson.choices; track $index; let i = $index) {
+                <button
+                  [class.selected]="choice === i"
+                  [class.correct]="answered && choice === lesson.answer && i === choice"
+                  [attr.aria-pressed]="choice === i"
+                  [disabled]="answered"
+                  (click)="choice = i"
+                >
+                  <span>{{ ['A', 'B', 'C'][i] }}</span
+                  >{{ c }}
+                </button>
+              }
+            </div>
+            @if (answered) {
+              <div class="quiz-feedback" [class.try-again]="choice !== lesson.answer">
+                <strong>{{
+                  choice === lesson.answer ? '¡Una buena decisión!' : 'Exploremos esa decisión.'
+                }}</strong>
+                <p>
+                  {{
+                    choice === lesson.answer
+                      ? lesson.explanation
+                      : 'Piensa en cómo cuidar lo que necesitas hoy sin perder de vista tu objetivo. Puedes intentarlo otra vez.'
+                  }}
+                </p>
+              </div>
+              <button
+                class="primary full"
+                (click)="choice === lesson.answer ? close() : retryLesson()"
+              >
+                {{ choice === lesson.answer ? 'Seguir mi camino' : 'Volver a intentarlo' }}
+              </button>
+            } @else {
+              <button class="primary full" [disabled]="choice < 0" (click)="answer()">
+                Explorar mi respuesta<app-icon name="arrow" />
+              </button>
+            }
+          }
+          @case ('notifications') {
+            @if (!state.profile.notifications) {
+              <div class="info-card">
+                <app-icon name="bell" />
+                <p>Tus notificaciones están en pausa. Puedes activarlas en Mi perfil.</p>
+              </div>
+            } @else {
+              @if (state.praise) {
+                <div class="praise-note">
+                  <app-icon name="heart" />
+                  <p>{{ state.praise }}</p>
+                </div>
+              }
+              @for (r of store.pending(); track r.id) {
+                <button class="notification-item" (click)="go('familia')">
+                  <app-icon name="clock" /><span
+                    ><strong>Una decisión para conversar</strong
+                    ><small>Retiro de {{ money(r.amount) }} pendiente de autorización.</small></span
+                  ><app-icon name="chevron" />
+                </button>
+              }
+              @for (h of state.history.slice(0, 8); track $index) {
+                <div class="notification-item">
+                  <app-icon [name]="h.kind === 'family' ? 'heart' : 'shield'" /><span
+                    ><strong>{{ h.text }}</strong
+                    ><small>{{ h.date }}</small></span
+                  >
+                </div>
+              } @empty {
+                <p class="muted">Tus primeros avances aparecerán aquí.</p>
+              }
+            }
+          }
+          @case ('summary') {
+            <span class="pill green">RESUMEN DE ESTA DEMO</span>
+            <h3 class="quiz-title">Cada paso de {{ state.profile.name }} cuenta.</h3>
+            <p class="sheet-description">
+              Una mirada a los avances registrados, para conversar en familia.
+            </p>
+            <div class="summary-grid">
+              <div>
+                <small>En sus metas</small><strong>{{ money(store.saved()) }}</strong>
+              </div>
+              <div>
+                <small>Aportes registrados</small><strong>{{ money(monthlyContributions) }}</strong>
+              </div>
+              <div>
+                <small>Metas alcanzadas</small><strong>{{ store.completedGoals().length }}</strong>
+              </div>
+              <div>
+                <small>Actividades aprendidas</small><strong>{{ state.lessons.length }}</strong>
+              </div>
+            </div>
+            <p class="summary-note">
+              Pregunta para conversar: “¿Qué aprendiste al planear tu sueño y cómo te gustaría que
+              te acompañe?”
+            </p>
+            <button class="primary full" (click)="close()">
+              Seguir acompañando<app-icon name="heart" />
+            </button>
+          }
+          @case ('cancel') {
+            @if (selected; as g) {
+              <p class="sheet-description">
+                {{
+                  g.saved > 0
+                    ? 'Para cerrar ' +
+                      g.name +
+                      ', primero devuelve su ahorro al saldo disponible. Si está protegido y aún no completaste la meta, tu familia deberá autorizar el retiro.'
+                    : '¿Quieres cerrar ' + g.name + '? Puedes crear otro sueño cuando quieras.'
+                }}
+              </p>
+              @if (g.saved > 0) {
+                <button
+                  class="primary full"
+                  [disabled]="hasPending(g.id)"
+                  (click)="open('withdraw', g)"
+                >
+                  {{
+                    hasPending(g.id)
+                      ? 'Espera la autorización familiar'
+                      : 'Revisar retiro de mi ahorro'
+                  }}
+                </button>
+              } @else {
+                <button
+                  class="primary full"
+                  (click)="
+                    store.cancelGoal(g.id);
+                    close();
+                    notify('Meta cerrada. Puedes elegir un nuevo sueño.')
+                  "
+                >
+                  Cerrar esta meta
+                </button>
+              }
+              <button class="secondary full" (click)="close()">Conservar mi meta</button>
+            }
+          }
+        }
+        <p class="sheet-disclaimer">
+          Simulación con dinero ficticio. Sin operaciones bancarias reales.
+        </p>
+      </div>
+    </section>
+  }
+</div>
+
+<ng-template #depositForm>
+  @if (modal() === 'family-deposit') {
+    <p class="sheet-description">
+      Un aporte voluntario para reconocer su esfuerzo. Sin condiciones ni presión.
+    </p>
+    <label class="field-label" for="family-goal">Elige qué sueño acompañar</label
+    ><select id="family-goal" [(ngModel)]="selectedId" (ngModelChange)="adjustFamilyAmount()">
+      @for (g of state.goals; track g.id) {
+        @if (!completed(g)) {
+          <option [ngValue]="g.id">{{ g.name }}</option>
+        }
+      }
+    </select>
+  }
+  @if (selected; as g) {
+    <div class="amount-context">
+      <span>{{ g.name }}</span
+      ><strong>Faltan {{ money(g.target - g.saved) }}</strong>
+    </div>
+    <p class="sheet-description">
+      {{
+        modal() === 'deposit'
+          ? 'Disponible para aportar: ' + money(state.balance)
+          : 'Este aporte simulado se sumará directamente a su meta.'
+      }}
+    </p>
+    <form (ngSubmit)="deposit()">
+      <label class="field-label" for="deposit-amount"
+        >¿Cuánto quieres {{ modal() === 'deposit' ? 'guardar' : 'aportar' }}? (S/)</label
+      ><input
+        class="amount-input"
+        id="deposit-amount"
+        name="amount"
+        type="number"
+        min="0.01"
+        [max]="
+          modal() === 'deposit'
+            ? Math.min(state.balance, round(g.target - g.saved))
+            : round(g.target - g.saved)
+        "
+        step="0.01"
+        [(ngModel)]="amount"
+        required
+      />
+      <div class="quick-amounts">
+        @for (n of [5, 10, 20, 50]; track n) {
+          <button
+            type="button"
+            [class.selected]="amount === n"
+            [disabled]="
+              n > round(g.target - g.saved) || (modal() === 'deposit' && n > state.balance)
+            "
+            (click)="amount = n"
+          >
+            S/ {{ n }}
+          </button>
+        }
+      </div>
+      <div class="suggestion">
+        <app-icon [name]="g.protected ? 'shield' : 'star'" /><span>{{
+          g.protected
+            ? 'Este aporte estará separado de tu saldo para gastos diarios.'
+            : 'Este aporte se sumará a tu meta flexible.'
+        }}</span>
+      </div>
+      @if (error) {
+        <p class="form-error" role="alert">{{ error }}</p>
+      }
+      <button
+        class="primary full"
+        type="submit"
+        [disabled]="completed(g) || (modal() === 'deposit' && state.balance <= 0)"
+      >
+        {{ modal() === 'deposit' ? 'Guardar para mi sueño' : 'Confirmar aporte familiar'
+        }}<app-icon name="arrow" />
+      </button>
+    </form>
+  }
+</ng-template>

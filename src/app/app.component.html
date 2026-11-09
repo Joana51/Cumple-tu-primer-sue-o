@@ -1,0 +1,243 @@
+<div class="demo-workspace" [class.presentation]="presentation()">
+  <header class="studio-header">
+    <a class="studio-brand" href="./" aria-label="Cumple tu primer sueño, inicio"
+      ><span class="brand-symbol"><app-icon name="spark" /></span
+      ><span
+        >mi primer <b>sueño<span class="orange">.</span></b></span
+      ></a
+    >
+    <button class="quiet-button" (click)="togglePresentation()">
+      <app-icon name="expand" />Modo presentación
+    </button>
+  </header>
+
+  <main class="demo-layout">
+    <section class="story-panel" aria-label="Acerca de la propuesta">
+      <span class="eyebrow"><i></i> PEQUEÑOS AHORROS. GRANDES LOGROS.</span>
+      <h1>
+        Su primer<br />ahorro.<br />Su próximo<br /><span>gran sueño.</span
+        ><svg viewBox="0 0 230 15" aria-hidden="true">
+          <path
+            d="M3 10Q115-3 227 7"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="5"
+            stroke-linecap="round"
+          />
+        </svg>
+      </h1>
+      <p>Aprender a cuidar su dinero.<br />Con metas propias y una familia<br />que acompaña.</p>
+      <div class="story-features">
+        <button (click)="page.set('protegido')">
+          <span class="feature-icon"><app-icon name="shield" /></span
+          ><span
+            ><strong>Ahorro con propósito</strong
+            ><small>Su meta tiene un lugar seguro.</small></span
+          ><app-icon name="chevron" />
+        </button>
+        <button (click)="page.set('familia')">
+          <span class="feature-icon peach"><app-icon name="heart" /></span
+          ><span
+            ><strong>Crecer en familia</strong><small>Más confianza. Más motivación.</small></span
+          ><app-icon name="chevron" />
+        </button>
+        <button (click)="page.set('aprende')">
+          <span class="feature-icon lavender"><app-icon name="book" /></span
+          ><span
+            ><strong>Aprender a su ritmo</strong
+            ><small>Una experiencia para cada edad.</small></span
+          ><app-icon name="chevron" />
+        </button>
+      </div>
+      <div class="concept-signature">
+        <span class="independent-mark" aria-hidden="true"><app-icon name="spark" /></span>
+        <div>Una idea de triadTech<br /><strong>Prototipo educativo independiente</strong></div>
+      </div>
+    </section>
+
+    <section class="phone-stage" aria-label="Aplicación móvil interactiva">
+      <div class="phone-above">
+        <span class="live-dot"></span> EXPERIENCIA MÓVIL
+        <span>{{ store.state().profile.age }} AÑOS</span>
+      </div>
+      <div class="phone-frame" [style.zoom]="phoneScale()">
+        <div class="phone-side-key one"></div>
+        <div class="phone-side-key two"></div>
+        <div class="phone-side-key three"></div>
+        <app-mobile [page]="page()" (pageChange)="page.set($event)" />
+      </div>
+      <div class="phone-below">
+        <span></span> Tu primer ahorro, tu primer logro, tu futuro financiero.
+      </div>
+    </section>
+
+    <aside
+      class="simulator-panel"
+      [class.mobile-open]="panelOpen()"
+      aria-label="Controles de la demostración"
+    >
+      <div class="row simulator-heading">
+        <div class="panel-icon"><app-icon name="sliders" /></div>
+        <div>
+          <h2>Prueba la experiencia</h2>
+          <p>Una demo. Muchas posibilidades.</p>
+        </div>
+        <button
+          class="icon-button panel-close"
+          aria-label="Cerrar controles"
+          (click)="panelOpen.set(false)"
+        >
+          <app-icon name="close" />
+        </button>
+      </div>
+      <div class="segmented" role="group" aria-label="Panel de demostración">
+        <button
+          [class.active]="panelTab() === 'profile'"
+          [attr.aria-pressed]="panelTab() === 'profile'"
+          (click)="panelTab.set('profile')"
+        >
+          Personalizar</button
+        ><button
+          [class.active]="panelTab() === 'scenarios'"
+          [attr.aria-pressed]="panelTab() === 'scenarios'"
+          (click)="panelTab.set('scenarios')"
+        >
+          Escenarios
+        </button>
+      </div>
+      @if (panelTab() === 'profile') {
+        <div class="panel-section">
+          <div class="eyebrow">01 <span>PERFIL SIMULADO</span></div>
+          <label class="field-label" for="demo-name">Nombre</label
+          ><input
+            id="demo-name"
+            maxlength="24"
+            [ngModel]="store.state().profile.name"
+            (ngModelChange)="store.profile({ name: $event })"
+            autocomplete="off"
+          />
+          <div class="age-heading">
+            <label class="field-label" for="demo-age">Edad del usuario</label
+            ><output for="demo-age">{{ store.state().profile.age }} <small>años</small></output>
+          </div>
+          <input
+            id="demo-age"
+            type="range"
+            min="10"
+            max="17"
+            step="1"
+            [ngModel]="store.state().profile.age"
+            (ngModelChange)="store.profile({ age: +$event })"
+            [style.--range-fill]="((store.state().profile.age - 10) / 7) * 100 + '%'"
+          />
+          <div class="range-labels"><span>10 años</span><span>17 años</span></div>
+          <div class="adaptive-note">
+            <app-icon name="spark" />
+            <div>
+              <strong>{{ store.bandLabel() }}</strong>
+              <p>
+                {{
+                  store.ageBand() === 'junior'
+                    ? 'Más juego, ejemplos simples y pequeños descubrimientos.'
+                    : store.ageBand() === 'explorer'
+                      ? 'Un equilibrio entre motivación, autonomía y planificación.'
+                      : 'Diseño sobrio, presupuesto y decisiones con más contexto.'
+                }}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="panel-section">
+          <div class="eyebrow">02 <span>DINERO DE LA DEMO</span></div>
+          <label class="field-label" for="demo-balance">Saldo disponible <span>S/</span></label
+          ><input
+            id="demo-balance"
+            type="number"
+            min="0"
+            max="100000"
+            step="0.01"
+            [ngModel]="store.state().balance"
+            (change)="changeNumber('balance', $any($event.target).value)"
+          />
+          @if (store.state().goals[0]; as g) {
+            <label class="field-label" for="demo-saved"
+              >Ahorrado en la primera meta <span>S/</span></label
+            ><input
+              id="demo-saved"
+              type="number"
+              min="0"
+              [max]="g.target"
+              step="0.01"
+              [ngModel]="g.saved"
+              (change)="changeNumber('saved', $any($event.target).value)"
+            />
+            <small class="input-hint"
+              >De {{ money(g.target) }} para {{ g.name.toLowerCase() }}.</small
+            >
+          }
+        </div>
+        <div class="panel-section last">
+          <div class="eyebrow">03 <span>PUNTO DE VISTA</span></div>
+          <div class="view-switch">
+            <button [class.active]="page() !== 'familia'" (click)="page.set('inicio')">
+              <app-icon name="user" />Adolescente</button
+            ><button [class.active]="page() === 'familia'" (click)="page.set('familia')">
+              <app-icon name="heart" />Familia
+            </button>
+          </div>
+          <p class="panel-hint">
+            Los cambios se reflejan al instante en el teléfono y se guardan en este navegador.
+          </p>
+          <p class="panel-hint">
+            Para presentar: usa un nombre ficticio. La vista familiar es una simulación sin
+            autenticación real.
+          </p>
+        </div>
+      } @else {
+        <div class="scenario-list">
+          <p>Elige un momento para contar la historia al jurado.</p>
+          @for (s of scenarios; track s.id) {
+            <button class="scenario-button" (click)="scenarioConfirm = s.id">
+              <span class="feature-icon"><app-icon [name]="s.icon" /></span
+              ><span
+                ><strong>{{ s.title }}</strong
+                ><small>{{ s.text }}</small></span
+              ><app-icon name="chevron" />
+            </button>
+            @if (scenarioConfirm === s.id) {
+              <div class="scenario-confirm">
+                <p>
+                  Se reemplazarán los saldos, metas y movimientos de esta demo. El perfil se
+                  conserva.
+                </p>
+                <div class="row">
+                  <button class="secondary" (click)="scenarioConfirm = ''">Volver</button
+                  ><button class="primary" (click)="loadScenario(s.id)">Cargar escenario</button>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      }
+      <div class="panel-footer">
+        <app-icon name="info" /><span>Prototipo independiente · Dinero ficticio.</span>
+      </div>
+    </aside>
+  </main>
+  <footer class="studio-footer">
+    <span>triadTech · WOMEN IN TECH <i> / </i> INCLUSIÓN FINANCIERA</span
+    ><span>Diseñado para soñar en grande<span class="orange"> ✦</span></span>
+  </footer>
+  @if (presentation()) {
+    <button class="presentation-exit quiet-button" (click)="togglePresentation()">
+      <app-icon name="expand" />Salir de presentación
+    </button>
+  }
+  <button
+    class="mobile-controls"
+    aria-label="Abrir controles de demo"
+    (click)="panelOpen.set(true)"
+  >
+    <app-icon name="sliders" />
+  </button>
+</div>
