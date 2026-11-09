@@ -1,5 +1,7 @@
 [
-  "favicon.svg",
+  "app-icon.svg",
+  "brand-symbol-mono.svg",
+  "brand-symbol.svg",
   "fonts/dm-sans-400.ttf",
   "fonts/dm-sans-500.ttf",
   "fonts/dm-sans-600.ttf",
@@ -11,7 +13,7 @@
   "fonts/manrope-700.ttf",
   "fonts/manrope-800.ttf",
   "fonts/manrope-OFL.txt",
-  "main-T2LGRIHO.js",
+  "main-QWJI5XK7.js",
   "media/dm-sans-400-Y2PJ5BOZ.ttf",
   "media/dm-sans-500-WJMKLIXC.ttf",
   "media/dm-sans-600-AFJ5CDW4.ttf",
@@ -21,5 +23,5 @@
   "media/manrope-600-PIIB7G5B.ttf",
   "media/manrope-700-HTN4NF2L.ttf",
   "media/manrope-800-FGCP4ZVJ.ttf",
-  "styles-T2ZLAXIV.css"
+  "styles-YQGY3N6E.css"
 ]

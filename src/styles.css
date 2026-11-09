@@ -342,9 +342,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--navy);
-  color: #ffab38;
-  border-radius: 10px;
+  background: transparent;
 }
 .brand-symbol app-brand-mark {
   width: 48px;
@@ -354,11 +352,14 @@ a {
   width: 72px;
   height: 72px;
   margin-bottom: 18px;
-  filter: drop-shadow(0 8px 12px #173e7220);
+  filter: none;
 }
 .independent-mark app-brand-mark {
   width: 36px;
   height: 36px;
+}
+.concept-signature .independent-mark {
+  background: transparent;
 }
 .independence-notice > app-brand-mark {
   width: 24px;
