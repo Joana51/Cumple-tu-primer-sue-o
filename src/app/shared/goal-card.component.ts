@@ -2,12 +2,14 @@ import { Component, input, output } from '@angular/core';
 import { Goal, money, progress, isGoalCompleted } from '../core/models';
 import { IconComponent } from './icon.component';
 import { DreamArtComponent } from './dream-art.component';
+import { StageArtComponent } from './stage-art.component';
 @Component({
   selector: 'app-goal-card',
   standalone: true,
-  imports: [IconComponent, DreamArtComponent],
+  imports: [IconComponent, DreamArtComponent, StageArtComponent],
   template: ` <article class="goal-card">
     <div class="goal-visual" [class.completed]="completed(goal())">
+      <app-stage-art class="goal-stage-art" [band]="band()" />
       <span class="pill" [class.green]="completed(goal())"
         ><app-icon [name]="completed(goal()) ? 'check' : goal().protected ? 'shield' : 'star'" />{{
           completed(goal())
@@ -73,6 +75,7 @@ import { DreamArtComponent } from './dream-art.component';
   </article>`,
 })
 export class GoalCardComponent {
+  band = input('explorer');
   goal = input.required<Goal>();
   deposit = output<Goal>();
   details = output<Goal>();

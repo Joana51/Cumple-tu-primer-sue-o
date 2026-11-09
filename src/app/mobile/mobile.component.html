@@ -61,7 +61,7 @@
                 <app-icon name="shield" />Protegido<app-icon name="chevron" />
               </button>
             </div>
-            <div class="balance-decoration" aria-hidden="true"></div>
+            <app-stage-art class="balance-stage-art" [band]="store.ageBand()" />
           </section>
           <div class="section-heading">
             <h2>{{ store.ageBand() === 'teen' ? 'Tu próxima meta' : 'Tu próximo gran sueño' }}</h2>
@@ -71,6 +71,7 @@
           </div>
           @if (featuredGoal; as goal) {
             <app-goal-card
+              [band]="store.ageBand()"
               [goal]="goal"
               (deposit)="open('deposit', $event)"
               (details)="open('detail', $event)"
@@ -162,6 +163,7 @@
           <div class="goals-stack">
             @for (g of store.activeGoals(); track g.id) {
               <app-goal-card
+                [band]="store.ageBand()"
                 [goal]="g"
                 (deposit)="open('deposit', $event)"
                 (details)="open('detail', $event)"
@@ -190,7 +192,11 @@
             </div>
             <div class="goals-stack completed-goals">
               @for (g of store.completedGoals(); track g.id) {
-                <app-goal-card [goal]="g" (details)="open('detail', $event)" />
+                <app-goal-card
+                  [band]="store.ageBand()"
+                  [goal]="g"
+                  (details)="open('detail', $event)"
+                />
               }
             </div>
           }
@@ -287,6 +293,7 @@
 
         @case ('aprende') {
           <div class="learning-hero">
+            <app-stage-art class="learning-stage-art" [band]="store.ageBand()" />
             <div class="eyebrow">{{ store.bandLabel() }}</div>
             <h1>
               {{

@@ -1,5 +1,4 @@
 import { test, expect, Page } from '@playwright/test';
-import { addDays } from '../src/app/core/agreement-rules';
 const key = 'primer-sueno-familia-v6';
 const family = (p: Page) => p.evaluate((k) => JSON.parse(localStorage.getItem(k)!), key);
 async function role(p: Page, parent: boolean) {
@@ -72,7 +71,6 @@ test('préstamo completo: solicitud, condiciones, aceptación, mora, entregas y 
   expect(f.parent.balance).toBe(1000);
   expect(f.children[0].balance).toBe(165);
   const id = f.agreements.find((a: any) => a.status === 'offered').id;
-  const start = f.today;
   await role(page, false);
   await childLoans(page);
   await page.locator('.loan-card').filter({ hasText: 'Propuesta por aceptar' }).click();
@@ -84,8 +82,9 @@ test('préstamo completo: solicitud, condiciones, aceptación, mora, entregas y 
   expect(f.children[1].balance).toBe(55);
   expect(f.parent.balance).toBe(970);
   expect(f.children[0].goals[0].saved).toBe(180);
-  await page.getByLabel('Fecha simulada').fill(addDays(start, 3));
-  await page.getByLabel('Fecha simulada').press('Tab');
+  await page.locator('.demo-time > summary').click();
+  for (let i = 0; i < 3; i++)
+    await page.getByRole('button', { name: 'Pasar 1 día', exact: true }).click();
   await expect(page.locator('.loan-detail-hero')).toContainText('Con retraso');
   for (let i = 0; i < 2; i++) {
     await page
@@ -156,7 +155,7 @@ test('detalle de Lucía permanece adulto, muestra todas sus metas y solo recibe 
   await expect(page.locator('.mobile-header')).toContainText('¡Hola, Lucía!');
   await expect(page.locator('.mobile-app')).not.toContainText('observado');
   await expect(page.locator('.mobile-app')).not.toContainText('Puntualidad de sus avisos');
-  await expect(page.locator('.adaptive-note')).toContainText('10–12');
+  await expect(page.getByLabel('Cambia la edad')).toHaveValue('11');
   await expect(page.locator('.balance-amount')).toHaveText('S/ 55.00');
   await role(page, true);
   await page

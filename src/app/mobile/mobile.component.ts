@@ -20,6 +20,7 @@ import { DreamArtComponent } from '../shared/dream-art.component';
 import { PhoneStatusComponent } from '../shared/phone-status.component';
 import { DemoNoticeComponent } from '../shared/demo-notice.component';
 import { LoansComponent } from '../loans/loans.component';
+import { StageArtComponent } from '../shared/stage-art.component';
 
 type Modal =
   | ''
@@ -44,6 +45,7 @@ type Modal =
     PhoneStatusComponent,
     DemoNoticeComponent,
     LoansComponent,
+    StageArtComponent,
   ],
   templateUrl: './mobile.component.html',
 })
@@ -70,6 +72,11 @@ export class MobileComponent {
   incomplete = (g: Goal) => !isGoalCompleted(g);
   completed = isGoalCompleted;
   get featuredGoal() {
+    const focus = this.store.scenarioGoal();
+    if (focus?.childId === this.store.previewChildId()) {
+      const goal = this.state.goals.find((g) => g.id === focus.goalId);
+      if (goal) return goal;
+    }
     return this.store.activeGoals()[0] || this.store.completedGoals()[0];
   }
   form = { name: '', target: 600, weeks: 12, protected: true, art: 'tablet' as Art };

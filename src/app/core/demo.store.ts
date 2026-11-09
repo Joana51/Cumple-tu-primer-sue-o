@@ -91,6 +91,7 @@ function validState(s: DemoState): boolean {
 @Injectable({ providedIn: 'root' })
 export class DemoStore {
   readonly scenarioVersion = signal(0);
+  readonly scenarioGoal = signal<{ childId: string; goalId: number } | null>(null);
   readonly persistenceWarning = signal('');
   readonly role = signal<Role>('child');
   readonly previewChildId = signal('alex');
@@ -475,6 +476,7 @@ export class DemoStore {
       } else {
         s.goals.push({ ...value, name: value.name.trim().slice(0, 42), id: Date.now(), saved: 0 });
         this.log(s, 'Creaste una nueva meta: ' + value.name, 0, 'achievement');
+        this.scenarioGoal.set(null);
       }
     });
     return '';
@@ -657,6 +659,7 @@ export class DemoStore {
     }
     if (key !== 'default') f.agreements = f.agreements.filter((a) => a.childId !== s.id);
     this.persist(f);
+    this.scenarioGoal.set(key === 'achieved' ? { childId: s.id, goalId: s.goals[0].id } : null);
     this.scenarioVersion.update((n) => n + 1);
   }
 }

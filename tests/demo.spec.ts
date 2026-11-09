@@ -1,3 +1,4 @@
+import { openExampleSettings } from './demo-controls';
 import { test, expect, Page } from '@playwright/test';
 
 const key = 'primer-sueno-familia-v6';
@@ -86,7 +87,7 @@ test('crear y modificar una meta, rechazar el exceso de saldo y aportar desde fa
 test('edad adapta estilo, contenido y actividad; contestar no cierra la actividad', async ({
   page,
 }) => {
-  await page.getByLabel('Edad del hijo o hija').fill('10');
+  await page.getByLabel('Cambia la edad').fill('10');
   await nav(page, 'Aprende');
   await expect(page.locator('.mobile-app')).toHaveAttribute('data-age', 'junior');
   await expect(page.locator('.learning-hero')).toContainText('¡Vamos a descubrir!');
@@ -97,7 +98,7 @@ test('edad adapta estilo, contenido y actividad; contestar no cierra la activida
   await expect(page.locator('.quiz-feedback')).toContainText('¡Una buena decisión!');
   expect((await state(page)).lessons).toContain('j1');
   await page.getByRole('button', { name: 'Seguir mi camino' }).click();
-  await page.getByLabel('Edad del hijo o hija').fill('17');
+  await page.getByLabel('Cambia la edad').fill('17');
   await expect(page.locator('.mobile-app')).toHaveAttribute('data-age', 'teen');
   await expect(page.locator('.learning-card').first()).toContainText('Presupuesto con intención');
 });
@@ -105,10 +106,10 @@ test('edad adapta estilo, contenido y actividad; contestar no cierra la activida
 test('escenarios requieren confirmación y permiten completar y liberar el ahorro', async ({
   page,
 }) => {
-  await page.getByRole('button', { name: 'Historias para probar', exact: true }).click();
-  await page.getByRole('button', { name: '¡Lo logré!' }).click();
-  await expect(page.getByRole('button', { name: 'Reiniciar con esta historia' })).toBeVisible();
-  await page.getByRole('button', { name: 'Reiniciar con esta historia' }).click();
+  await page.locator('.demo-examples > summary').click();
+  await page.getByRole('button', { name: 'Ver una meta cumplida' }).click();
+  await expect(page.getByRole('button', { name: 'Cargar ejemplo' })).toBeVisible();
+  await page.getByRole('button', { name: 'Cargar ejemplo' }).click();
   await expect(page.locator('.goal-visual')).toContainText('¡Sueño cumplido!');
   await page.getByRole('button', { name: 'Ver mi meta cumplida' }).click();
   await page.getByRole('button', { name: 'Usar mi ahorro para este sueño' }).click();
@@ -116,7 +117,7 @@ test('escenarios requieren confirmación y permiten completar y liberar el ahorr
   await page.getByRole('button', { name: 'Devolver a mi saldo disponible' }).click();
   expect((await state(page)).balance).toBe(765);
   expect((await state(page)).requests).toHaveLength(0);
-  await page.getByRole('button', { name: 'Modo presentación', exact: true }).click();
+  await page.getByRole('button', { name: 'Ampliar teléfono', exact: true }).click();
   await expect(page.locator('.simulator-panel')).toBeHidden();
   await expect(page.locator('.phone-frame')).toBeVisible();
 });
@@ -151,6 +152,7 @@ test('móvil real: sin desbordamiento horizontal, navegación fija y controles e
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator('.mobile-navigation')).toBeInViewport();
   await page.getByRole('button', { name: 'Abrir controles de demo' }).click();
+  await openExampleSettings(page);
   await page.getByLabel('Nombre', { exact: true }).fill('Sam');
   await page.getByRole('button', { name: 'Cerrar controles' }).click();
   await expect(page.locator('.mobile-header')).toContainText('¡Hola, Sam!');
@@ -186,7 +188,7 @@ test('migra datos previos sin borrar la copia original', async ({ page }) => {
   await page.reload();
   await expect(page.locator('.mobile-header')).toContainText('Luz');
   await expect(page.locator('.goal-card')).toContainText('Mi guitarra');
-  await page.getByLabel('Edad del hijo o hija').fill('13');
+  await page.getByLabel('Cambia la edad').fill('13');
   expect((await state(page)).goals[0].saved).toBe(60);
   expect(
     await page.evaluate(() => JSON.parse(localStorage.getItem('primer-sueno-demo-v2')!).balance)
@@ -226,8 +228,8 @@ test('identidad independiente y aviso visibles en presentación, formularios y m
   await expect(page.locator('.studio-header')).not.toContainText('PROTOTIPO INTERACTIVO');
   await expect(page.locator('.bcp-wordmark')).toHaveCount(0);
   await expect(page.locator('.concept-signature')).toContainText('triadTech');
-  await expect(page.locator('.panel-footer')).not.toContainText('Integración');
-  await page.getByRole('button', { name: 'Modo presentación', exact: true }).click();
+  await expect(page.locator('.demo-footnote')).not.toContainText('Integración');
+  await page.getByRole('button', { name: 'Ampliar teléfono', exact: true }).click();
   await expect(notice).toBeInViewport();
   await page.getByRole('button', { name: 'Agregar ahorro', exact: true }).click();
   await expect(notice).toBeInViewport();
@@ -235,7 +237,7 @@ test('identidad independiente y aviso visibles en presentación, formularios y m
   let dialogBox = await page.getByRole('dialog').boundingBox();
   expect(noticeBox!.y + noticeBox!.height).toBeLessThanOrEqual(dialogBox!.y);
   await page.keyboard.press('Escape');
-  await page.getByRole('button', { name: 'Salir de presentación' }).click();
+  await page.getByRole('button', { name: 'Volver a la vista completa' }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(notice).toBeInViewport();
   await page.getByRole('button', { name: 'Agregar ahorro', exact: true }).click();
@@ -247,6 +249,7 @@ test('identidad independiente y aviso visibles en presentación, formularios y m
 test('la meta y sus insignias permanecen cumplidas tras usar todo el ahorro y recargar', async ({
   page,
 }) => {
+  await openExampleSettings(page);
   await page.locator('#demo-balance').fill('420');
   await page.locator('#demo-balance').press('Tab');
   await page.getByRole('button', { name: 'Agregar ahorro', exact: true }).click();
@@ -305,6 +308,7 @@ test('la meta y sus insignias permanecen cumplidas tras usar todo el ahorro y re
 test('una sesión previa sin hitos se migra y conserva su meta cumplida al retirar', async ({
   page,
 }) => {
+  await openExampleSettings(page);
   await page.getByLabel('Nombre', { exact: true }).fill('Mara');
   await page.evaluate((k) => {
     const saved = JSON.parse(localStorage.getItem(k)!);
@@ -334,7 +338,7 @@ test('Inicio muestra progreso y aporte sin desplazarse en las tres edades', asyn
     for (const age of [10, 14, 17]) {
       if (size.width <= 650)
         await page.getByRole('button', { name: 'Abrir controles de demo' }).click();
-      await page.getByLabel('Edad del hijo o hija').fill(String(age));
+      await page.getByLabel('Cambia la edad').fill(String(age));
       if (size.width <= 650) await page.getByRole('button', { name: 'Cerrar controles' }).click();
       await expect(
         page.getByRole('button', { name: 'Agregar ahorro', exact: true })

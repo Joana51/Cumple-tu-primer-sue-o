@@ -65,3 +65,18 @@ Las pruebas existentes se actualizaron para buscar las etiquetas nuevas mantenie
 ## Cómo validar comprensión en una prueba real
 
 Sin explicar la app primero, pedir a cada participante que indique cuánto dinero recibirá, qué debe hacer, cuántas veces, hasta cuándo y qué ocurre si el adulto no responde. Pedirle después que identifique qué botón autoriza o rechaza un retiro. Observar errores, preguntas y decisiones; no limitarse a preguntar si el texto «gusta». Ajustar la redacción a partir de esos resultados, sin prometer comprensión universal por haber aplicado una guía.
+
+## Panel externo: primero explorar, después preparar
+
+La revisión encontró que la configuración daba el mismo peso a explorar la app y preparar una presentación. Había siete campos visibles —hijo, nombre, edad, tres importes y fecha— además del cambio de vista y dos pestañas. Para un jurado nuevo esa jerarquía exigía decidir demasiado antes de tocar el teléfono.
+
+Se aplicó [divulgación progresiva de NN/G](https://www.nngroup.com/articles/progressive-disclosure/): las funciones secundarias se muestran cuando se solicitan. También se tomó como referencia [hacer el servicio simple de usar de GOV.UK](https://www.gov.uk/service-manual/service-standard/point-4-make-the-service-simple-to-use), sin trasladar su identidad visual.
+
+- Visibles: vista del hijo/adulto, hijo seleccionado y edad. Una indicación explica que la app se usa en el teléfono.
+- Cerrados por defecto: «Probar el paso de los días», «Editar los datos del ejemplo» y «Empezar con otro ejemplo». Se abre uno a la vez.
+- Se retiraron las pestañas y el selector de fecha arbitraria. «Pasar 1 día» y «Pasar 7 días» permiten probar plazos sin gestionar un calendario.
+- Se mantienen nombres y montos para preparar la demo, sin mezclarlos con transacciones normales. La etiqueta del ahorro identifica la meta concreta.
+- Tres ejemplos sustituyen cuatro opciones: ahorro, retiro y meta cumplida. Cargar uno exige confirmación, explica que reemplaza los datos financieros de toda la familia y abre al hijo seleccionado. La meta completada se destaca aunque existan otras metas activas.
+- «Ampliar teléfono» describe el resultado de la antigua etiqueta «Modo presentación». En móvil el encabezado permite cerrar en cualquier altura; Escape cierra y el foco vuelve al botón de apertura.
+
+La simplificación se comprobó con recorridos de prueba y revisión visual; aún conviene observar a jurados usando el panel sin instrucciones previas.

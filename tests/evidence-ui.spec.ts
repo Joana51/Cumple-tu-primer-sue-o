@@ -1,3 +1,4 @@
+import { openExampleSettings } from './demo-controls';
 import { test, expect, Page } from '@playwright/test';
 import { executeLoanCommand } from '../src/app/core/loan-engine';
 import { addDays } from '../src/app/core/agreement-rules';
@@ -7,6 +8,7 @@ const state = (p: Page): Promise<FamilyState> =>
   p.evaluate((k) => JSON.parse(localStorage.getItem(k)!), key);
 async function prepare(page: Page, reject = false) {
   await page.goto('/');
+  await openExampleSettings(page);
   await page.getByLabel('Nombre', { exact: true }).fill('Alex test');
   const f = await state(page);
   f.agreements = [];

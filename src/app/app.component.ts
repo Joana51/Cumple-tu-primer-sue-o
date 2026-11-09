@@ -1,8 +1,16 @@
-import { Component, HostListener, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DemoStore } from './core/demo.store';
 import { Page, ParentPage, Role, money } from './core/models';
-import { addDays } from './core/agreement-rules';
+import { addDays, dateLabel } from './core/agreement-rules';
 import { IconComponent } from './shared/icon.component';
 import { MobileComponent } from './mobile/mobile.component';
 import { ParentComponent } from './parent/parent.component';
@@ -19,6 +27,11 @@ export class AppComponent {
   page = signal<Page>('inicio');
   parentPage = signal<ParentPage>('home');
   panelMessage = signal('');
+  firstStep = computed(() =>
+    this.store.role() === 'parent'
+      ? 'En el teléfono puedes ver las metas de tus hijos y responder a sus solicitudes.'
+      : 'En el teléfono puedes crear metas, agregar ahorro y pedir un préstamo familiar.'
+  );
   switchRole(role: Role) {
     this.store.setRole(role);
     this.page.set('inicio');
@@ -31,14 +44,32 @@ export class AppComponent {
   advanceDate(days: number) {
     this.panelMessage.set(this.store.setDemoDate(addDays(this.store.family().today, days)));
   }
-  changeDate(date: string) {
-    this.panelMessage.set(this.store.setDemoDate(date));
-  }
   presentation = signal(false);
   panelOpen = signal(false);
-  panelTab = signal<'profile' | 'scenarios'>('profile');
+  demoPanel = viewChild<ElementRef<HTMLElement>>('demoPanel');
+  private controlFocus?: HTMLElement;
+  openPanel() {
+    this.controlFocus = document.activeElement as HTMLElement;
+    this.panelOpen.set(true);
+    requestAnimationFrame(() => {
+      this.demoPanel()?.nativeElement.scrollTo({ top: 0 });
+      if (this.viewport().width <= 650)
+        this.demoPanel()
+          ?.nativeElement.querySelector<HTMLButtonElement>('.panel-close')
+          ?.focus({ preventScroll: true });
+    });
+  }
+  closePanel() {
+    const wasOpen = this.panelOpen();
+    this.panelOpen.set(false);
+    if (wasOpen && this.controlFocus?.isConnected) this.controlFocus.focus({ preventScroll: true });
+  }
+  @HostListener('document:keydown.escape') closePanelOnEscape() {
+    if (this.panelOpen()) this.closePanel();
+  }
   scenarioConfirm = '';
   money = money;
+  dateLabel = dateLabel;
   private viewport = signal({ width: window.innerWidth, height: window.innerHeight });
   phoneScale = computed(() => {
     const { width, height } = this.viewport();
@@ -55,29 +86,22 @@ export class AppComponent {
     {
       id: 'default',
       icon: 'home',
-      title: 'Un sueño en marcha',
-      text: 'Tablet al 30% y S/ 165 disponibles.',
+      title: 'Probar el ahorro',
+      text: 'Una meta empezada y dinero para seguir ahorrando.',
       page: 'inicio' as Page,
-    },
-    {
-      id: 'start',
-      icon: 'spark',
-      title: 'Mi primer sueño',
-      text: 'Una cuenta lista para crear su primera meta.',
-      page: 'suenos' as Page,
     },
     {
       id: 'withdraw',
       icon: 'shield',
-      title: 'Un imprevisto, en familia',
-      text: 'Un retiro pendiente de autorización familiar.',
+      title: 'Pedir un retiro',
+      text: 'Un hijo espera autorización para usar parte de su ahorro.',
       page: 'familia' as Page,
     },
     {
       id: 'achieved',
       icon: 'trophy',
-      title: '¡Lo logré!',
-      text: 'La meta al 100%. Un logro para celebrar.',
+      title: 'Ver una meta cumplida',
+      text: 'El ahorro ya alcanza para conseguir la meta.',
       page: 'inicio' as Page,
     },
   ];
@@ -92,8 +116,12 @@ export class AppComponent {
   }
   loadScenario(key: string): void {
     this.store.scenario(key);
+    this.store.setRole('child');
     this.page.set(this.scenarios.find((s) => s.id === key)?.page || 'inicio');
+    this.parentPage.set('home');
     this.scenarioConfirm = '';
+    this.panelMessage.set('');
+    this.closePanel();
   }
   togglePresentation(): void {
     this.presentation.update((v) => !v);

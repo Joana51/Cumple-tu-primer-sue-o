@@ -1,5 +1,6 @@
 @import './fonts.css';
 @import './family.css';
+@import './age-themes.css';
 
 :root {
   font-family: 'DM Sans', sans-serif;
@@ -3495,4 +3496,183 @@ app-mobile {
 }
 .next-dream {
   margin-top: 12px;
+}
+
+/* Controles de la demo: explorar primero, preparar ejemplos cuando haga falta. */
+.simulator-panel {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  overscroll-behavior: contain;
+}
+.demo-optional summary:focus-visible {
+  outline: 3px solid #3472ed;
+  outline-offset: 3px;
+  border-radius: 5px;
+}
+.simulator-panel .simulator-heading {
+  padding: 20px 18px 14px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: white;
+}
+.simulator-panel .simulator-heading h2 {
+  font-size: 16px;
+}
+.simulator-panel .simulator-heading p {
+  font-size: 11px;
+  color: #566a83;
+  line-height: 1.5;
+}
+.simulator-panel .demo-essential {
+  margin: 0;
+  padding: 0 18px 16px;
+  border: 0;
+}
+.simulator-panel .demo-essential .field-label,
+.simulator-panel .demo-option-body .field-label {
+  font-size: 11px;
+  margin: 14px 0 7px;
+}
+.simulator-panel .demo-essential > .field-label:first-child {
+  margin-top: 0;
+}
+.simulator-panel .demo-essential .view-switch {
+  margin-top: 0;
+}
+.simulator-panel .view-switch button {
+  min-height: 42px;
+  font-size: 11px;
+  color: #526782;
+}
+.simulator-panel .view-switch button.active {
+  color: var(--navy);
+  font-weight: 700;
+}
+.simulator-panel .demo-essential select {
+  min-height: 44px;
+  font-size: 12px;
+  padding: 9px 10px;
+}
+.simulator-panel .demo-essential .age-heading {
+  margin: 15px 0 8px;
+}
+.simulator-panel .age-heading .field-label {
+  margin: 0;
+}
+.simulator-panel .age-heading output {
+  font-size: 20px;
+}
+.simulator-panel .demo-age-help {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #566a83;
+  line-height: 1.5;
+}
+.simulator-panel .range-labels {
+  color: #566a83;
+  font-size: 10px;
+}
+.demo-first-step {
+  display: flex;
+  gap: 8px;
+  padding: 11px;
+  margin: 14px 0 0;
+  background: #eef3fb;
+  border-radius: 10px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #284e7d;
+}
+.demo-first-step app-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.demo-optional {
+  margin: 0 18px;
+  border-top: 1px solid var(--border);
+}
+.demo-optional > details {
+  border-bottom: 1px solid var(--border);
+}
+.demo-optional summary {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  cursor: pointer;
+  list-style: none;
+  min-height: 52px;
+  padding: 10px 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+.demo-optional summary::-webkit-details-marker {
+  display: none;
+}
+.demo-optional summary app-icon {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  color: #4f6e98;
+}
+.demo-optional summary::after {
+  content: '+';
+  margin-left: auto;
+  font-size: 19px;
+  color: #667d9c;
+  font-weight: 500;
+}
+.demo-optional details[open] > summary::after {
+  content: '−';
+}
+.demo-option-body {
+  padding: 0 0 16px;
+}
+.demo-option-body > p {
+  font-size: 11px;
+  line-height: 1.65;
+  color: #536984;
+  margin: 0 0 12px;
+}
+.demo-option-body .demo-today {
+  color: var(--navy);
+}
+.simulator-panel .demo-option-body input {
+  min-height: 44px;
+  font-size: 12px;
+  padding: 10px;
+}
+.demo-option-body .input-hint {
+  font-size: 10px;
+  line-height: 1.6;
+  color: #536984;
+}
+.demo-option-body .scenario-button strong {
+  font-size: 12px;
+}
+.demo-option-body .scenario-button small {
+  font-size: 11px;
+  line-height: 1.5;
+}
+.demo-option-body .scenario-button {
+  min-height: 68px;
+}
+.scenario-confirm-actions {
+  display: grid;
+  gap: 8px;
+}
+.scenario-confirm-actions button {
+  min-height: 44px;
+  width: 100%;
+  font-size: 11px;
+}
+.simulator-panel .demo-footnote {
+  font-size: 10px;
+  color: #5b6d84;
+  line-height: 1.6;
+  margin: 0;
+  padding: 14px 18px;
 }

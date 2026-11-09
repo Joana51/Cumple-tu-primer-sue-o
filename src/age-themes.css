@@ -1,0 +1,474 @@
+/* Three visual directions, one navigation model and the same financial meaning. */
+.mobile-app:not(.parent-app) .balance-stage-art {
+  position: absolute;
+  right: -12px;
+  top: 2px;
+  width: 160px;
+  height: 130px;
+  color: #fff;
+  opacity: 0.26;
+  z-index: 0;
+}
+.mobile-app:not(.parent-app) .balance-card > :not(.balance-stage-art) {
+  position: relative;
+  z-index: 1;
+}
+.mobile-app:not(.parent-app) .goal-stage-art {
+  position: absolute;
+  inset: 0;
+  width: 70%;
+  height: 100%;
+  color: #7d97c4;
+  opacity: 0.6;
+}
+.mobile-app:not(.parent-app) .learning-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.mobile-app:not(.parent-app) .learning-stage-art {
+  position: absolute;
+  width: 180px;
+  height: 120px;
+  right: -45px;
+  top: 0;
+  opacity: 0.2;
+  z-index: -1;
+  color: #375c99;
+}
+.mobile-app:not(.parent-app) .learning-hero > app-icon {
+  display: none;
+}
+.mobile-app:not(.parent-app) .goal-visual > app-dream-art {
+  z-index: 1;
+}
+.mobile-app:not(.parent-app) .section-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.mobile-app:not(.parent-app) .section-heading h2::before {
+  content: '';
+  flex-shrink: 0;
+}
+
+/* 10–12 · Discover: broad shapes, warm surfaces and progress in visible steps. */
+.mobile-app[data-age='junior']:not(.parent-app) {
+  --motif-a: #ffd26f;
+  --motif-b: #ff9c86;
+  --motif-c: #89b7ed;
+  --app-radius: 20px;
+  --card-radius: 22px;
+  background: #fffaf1;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .mobile-header {
+  background: #fffaf1;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .avatar {
+  background: #fff0cd;
+  border: 2px solid #efd59c;
+  color: #174a9c;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .mobile-header h2 {
+  font-weight: 800;
+  color: #173f7b;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .balance-card {
+  background: #164da8;
+  border: 1px solid #15438f;
+  box-shadow: 0 4px 0 #e9d5aa;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .balance-stage-art {
+  width: 175px;
+  right: -16px;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .goal-card {
+  border: 2px solid #eadcc3;
+  box-shadow: 0 4px 0 #f0e7d6;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .goal-visual {
+  background: #fff0cf;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .goal-stage-art {
+  width: 66%;
+  color: #d5ae5e;
+  opacity: 0.8;
+}
+.mobile-app[data-age='junior']:not(.parent-app).home-screen .goal-visual {
+  height: 76px;
+}
+.mobile-app[data-age='junior']:not(.parent-app).home-screen .goal-visual > app-dream-art {
+  width: 132px;
+  height: 90px;
+  right: 0;
+  top: -4px;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .goal-card .progress-track {
+  height: 10px;
+  position: relative;
+  background: #edf0f6;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .goal-card .progress-track > span {
+  background: #245fc4;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .goal-card .progress-track::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent calc(25% - 3px),
+    #fff calc(25% - 3px),
+    #fff 25%
+  );
+}
+.mobile-app[data-age='junior']:not(.parent-app) .primary {
+  background: #2057b5;
+  box-shadow: 0 3px 0 #d9b666;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .section-heading h2::before {
+  width: 9px;
+  height: 9px;
+  background: #e8ad45;
+  border-radius: 50% 50% 2px 50%;
+  transform: rotate(-35deg);
+}
+.mobile-app[data-age='junior']:not(.parent-app) .learning-hero {
+  background: #fff0cf;
+  border: 1px solid #ead5ac;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .learning-stage-art {
+  opacity: 0.55;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .learning-card {
+  border: 2px solid #e5dbca;
+  box-shadow: 0 4px 0 #f1e9dc;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .lesson-number {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffedc0;
+  color: #173e72;
+  font-weight: 800;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .family-banner {
+  background: #fff1d9;
+  border-color: #ead4af;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .installment-card {
+  border-left: 5px solid #e6b04e;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .mobile-navigation .active {
+  background: #fff0ce;
+  color: #174891;
+}
+
+/* 13–15 · Build: offset modules and diagonal framing, with space for identity. */
+.mobile-app[data-age='explorer']:not(.parent-app) {
+  --motif-a: #9dacf9;
+  --motif-b: #ffbc70;
+  --motif-c: #6e97d4;
+  --app-radius: 15px;
+  --card-radius: 18px;
+  background: #f4f6ff;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .mobile-header {
+  background: #f4f6ff;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .avatar {
+  background: #e6eaff;
+  color: #354b8b;
+  border-radius: 12px;
+  border: 1px solid #bcc8ec;
+  box-shadow: 3px 3px 0 #e0e5f6;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .balance-card {
+  background: linear-gradient(115deg, #173e72 40%, #3c4487);
+  border-radius: 17px 17px 5px 17px;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .balance-stage-art {
+  width: 170px;
+  right: -10px;
+  top: -3px;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .goal-card {
+  border: 1px solid #ccd5ed;
+  box-shadow: 3px 4px 0 #e4e8f6;
+  border-radius: 17px 17px 5px 17px;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .goal-visual {
+  background: #e7eaff;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .goal-stage-art {
+  width: 78%;
+  opacity: 0.8;
+  color: #8b9ed7;
+}
+.mobile-app[data-age='explorer']:not(.parent-app).home-screen .goal-visual > app-dream-art {
+  transform: rotate(-7deg);
+  width: 110px;
+  height: 86px;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .goal-card .progress-track {
+  height: 8px;
+  position: relative;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .goal-card .progress-track > span {
+  background: #4359a8;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .goal-card .progress-track::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent calc(10% - 2px),
+    #fff calc(10% - 2px),
+    #fff 10%
+  );
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .primary {
+  background: #263f7a;
+  border-radius: 10px 10px 3px 10px;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .section-heading h2::before {
+  width: 8px;
+  height: 12px;
+  background: #6b7bc3;
+  transform: skew(-20deg);
+  box-shadow: 4px 0 0 #d3d9ed;
+  margin-right: 3px;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .learning-hero {
+  background: #e7eaff;
+  border-left: 5px solid #626fb4;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .learning-stage-art {
+  opacity: 0.5;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .learning-card {
+  background: linear-gradient(115deg, #fff 80%, #f0f2ff 80%);
+  border: 1px solid #cfd6ec;
+  border-left: 4px solid #8796d2;
+  border-radius: 14px 14px 4px 14px;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .lesson-number {
+  color: #4659a1;
+  background: #eef0ff;
+  border-bottom: 3px solid #c4ceef;
+  padding: 3px 8px;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .installment-card {
+  border-left: 4px solid #8796d2;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .mobile-navigation .active {
+  background: #e5e9fc;
+  color: #304881;
+}
+
+/* 16–17 · Plan: an editorial layout, fine grids and a stronger numeric hierarchy. */
+.mobile-app[data-age='teen']:not(.parent-app) {
+  --motif-a: #dce6e6;
+  --motif-b: #ca9846;
+  --motif-c: #bdd6d3;
+  --app-radius: 10px;
+  --card-radius: 10px;
+  background: #f6f8f8;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .mobile-header {
+  background: #f6f8f8;
+  border-bottom: 1px solid #e0e6e9;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .avatar {
+  background: #edf1f2;
+  border: 1px solid #b9c9cf;
+  color: #173e72;
+  border-radius: 8px;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .balance-card {
+  background: #fff;
+  color: #173e72;
+  border: 1px solid #becdd7;
+  border-top: 4px solid #173e72;
+  box-shadow: none;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .balance-card > .row > span {
+  color: #4c6278;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  font-size: 8px;
+  font-weight: 700;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .balance-label {
+  color: #53687c;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .balance-amount {
+  color: #173e72;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .balance-card .light,
+.mobile-app[data-age='teen']:not(.parent-app) .balance-protected-link {
+  color: #315874;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .balance-bottom {
+  color: #526b7c;
+  border-color: #e0e8eb;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .balance-bottom b {
+  color: #173e72;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .balance-bottom > span > span,
+.mobile-app[data-age='teen']:not(.parent-app) .balance-bottom app-icon {
+  color: #315874;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .balance-stage-art {
+  color: #4f7b83;
+  opacity: 0.17;
+  right: -30px;
+  top: -3px;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .goal-card {
+  border: 1px solid #c6d2d9;
+  border-radius: 10px;
+  box-shadow: none;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .goal-visual {
+  height: 70px;
+  background: #eef3f3;
+  border-bottom: 1px solid #dce5e7;
+}
+.mobile-app[data-age='teen']:not(.parent-app).home-screen .goal-visual {
+  height: 56px;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .goal-visual > app-dream-art,
+.mobile-app[data-age='teen']:not(.parent-app).home-screen .goal-visual > app-dream-art {
+  position: absolute;
+  left: 10px;
+  top: -1px;
+  margin: 0;
+  width: 76px;
+  height: 60px;
+  transform: none;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .goal-visual > .pill {
+  left: auto;
+  right: 13px;
+  top: 17px;
+  background: #fff;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .goal-stage-art {
+  right: 0;
+  left: auto;
+  width: 60%;
+  color: #86a4ac;
+  opacity: 0.25;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .goal-body h3 {
+  font-size: 15px;
+  letter-spacing: -0.3px;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .goal-numbers {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  column-gap: 7px;
+  font-variant-numeric: tabular-nums;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .goal-numbers strong {
+  font-size: 22px;
+  font-weight: 700;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .goal-numbers > b {
+  border: 1px solid #d7e1e5;
+  border-radius: 5px;
+  padding: 2px 6px;
+  background: #f6f9f9;
+  color: #31576a;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .goal-card .progress-track {
+  height: 4px;
+  border-radius: 2px;
+  background: #e4ecee;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .goal-card .progress-track > span {
+  background: #367478;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .primary {
+  background: #173e72;
+  border-radius: 7px;
+  box-shadow: none;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .section-heading h2::before {
+  width: 12px;
+  height: 2px;
+  background: #648c95;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .learning-hero {
+  background: #eef3f3;
+  border-top: 3px solid #315b6b;
+  border-radius: 8px;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .learning-stage-art {
+  color: #527d83;
+  opacity: 0.24;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .learning-card {
+  border: 0;
+  border-top: 1px solid #c8d5da;
+  border-radius: 0;
+  background: transparent;
+  padding-left: 4px;
+  padding-right: 4px;
+  margin-bottom: 5px;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .lesson-number {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: #537580;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .lesson-link {
+  color: #315f72;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .installment-card {
+  border-left: 3px solid #6c9096;
+  border-radius: 8px;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .mobile-navigation .active {
+  background: #e8eff0;
+  color: #173e72;
+}
+
+/* Completion remains a semantic state in every visual direction. */
+.mobile-app[data-age]:not(.parent-app) .learning-hero > p {
+  color: #52677b;
+}
+.mobile-app[data-age]:not(.parent-app) .mobile-navigation button.active {
+  background: transparent;
+}
+.mobile-app[data-age='junior']:not(.parent-app) .mobile-navigation button.active .nav-icon {
+  background: #fff0ce;
+}
+.mobile-app[data-age='explorer']:not(.parent-app) .mobile-navigation button.active .nav-icon {
+  background: #e5e9fc;
+  border-radius: 10px 10px 3px 10px;
+}
+.mobile-app[data-age='teen']:not(.parent-app) .mobile-navigation button.active .nav-icon {
+  background: #e8eff0;
+  border-radius: 6px;
+}
+.mobile-app[data-age]:not(.parent-app) .goal-visual.completed {
+  background-color: #eaf5ee;
+}
+.mobile-app[data-age]:not(.parent-app) .goal-visual.completed .goal-stage-art {
+  opacity: 0.2;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mobile-app[data-age]:not(.parent-app) .goal-visual > app-dream-art {
+    transform: none;
+  }
+}

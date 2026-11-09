@@ -7,7 +7,7 @@
       ></a
     >
     <button class="quiet-button" (click)="togglePresentation()">
-      <app-icon name="expand" />Modo presentación
+      <app-icon name="expand" />Ampliar teléfono
     </button>
   </header>
 
@@ -77,6 +77,7 @@
     </section>
 
     <aside
+      #demoPanel
       class="simulator-panel"
       [class.mobile-open]="panelOpen()"
       aria-label="Controles de la demostración"
@@ -84,199 +85,171 @@
       <div class="row simulator-heading">
         <div class="panel-icon"><app-icon name="sliders" /></div>
         <div>
-          <h2>Prueba la experiencia</h2>
-          <p>Cambia de vista, edad y saldos.</p>
+          <h2>Explora la demo</h2>
+          <p>Usa el teléfono y prueba las dos vistas.</p>
         </div>
         <button
           class="icon-button panel-close"
           aria-label="Cerrar controles"
-          (click)="panelOpen.set(false)"
+          (click)="closePanel()"
         >
           <app-icon name="close" />
         </button>
       </div>
-      <div class="segmented" role="group" aria-label="Panel de demostración">
-        <button
-          [class.active]="panelTab() === 'profile'"
-          [attr.aria-pressed]="panelTab() === 'profile'"
-          (click)="panelTab.set('profile')"
-        >
-          Ajustar demo</button
-        ><button
-          [class.active]="panelTab() === 'scenarios'"
-          [attr.aria-pressed]="panelTab() === 'scenarios'"
-          (click)="panelTab.set('scenarios')"
-        >
-          Historias para probar
-        </button>
-      </div>
-      @if (panelTab() === 'profile') {
-        <div class="panel-role-section">
-          <label class="field-label" for="demo-child">Hijo o hija que quieres mostrar</label
-          ><select
-            id="demo-child"
-            [ngModel]="store.demoChildId()"
-            (ngModelChange)="store.selectDemoChild($event)"
+
+      <div class="demo-essential panel-section">
+        <p class="field-label" id="demo-view-label">¿Quién usa la app?</p>
+        <div class="view-switch" role="group" aria-labelledby="demo-view-label">
+          <button
+            [class.active]="store.role() === 'child'"
+            [attr.aria-pressed]="store.role() === 'child'"
+            (click)="switchRole('child')"
           >
-            @for (child of store.family().children; track child.id) {
-              <option [value]="child.id">
-                {{ child.profile.name }} · {{ child.profile.age }} años
-              </option>
-            }
-          </select>
-          <div class="view-switch" aria-label="Cambiar vista de demostración">
-            <button
-              [class.active]="store.role() === 'child'"
-              [attr.aria-pressed]="store.role() === 'child'"
-              (click)="switchRole('child')"
-            >
-              <app-icon name="user" />Vista del hijo</button
-            ><button
-              [class.active]="store.role() === 'parent'"
-              [attr.aria-pressed]="store.role() === 'parent'"
-              (click)="switchRole('parent')"
-            >
-              <app-icon name="heart" />Vista del adulto
-            </button>
-          </div>
+            <app-icon name="user" />Vista del hijo
+          </button>
+          <button
+            [class.active]="store.role() === 'parent'"
+            [attr.aria-pressed]="store.role() === 'parent'"
+            (click)="switchRole('parent')"
+          >
+            <app-icon name="heart" />Vista del adulto
+          </button>
         </div>
-        <div class="panel-section">
-          <div class="eyebrow">01 <span>PERFIL SIMULADO</span></div>
-          <label class="field-label" for="demo-name">Nombre</label
-          ><input
-            id="demo-name"
-            maxlength="24"
-            [ngModel]="store.demoChild().profile.name"
-            (ngModelChange)="store.configureProfile(store.demoChildId(), { name: $event })"
-            autocomplete="off"
-          />
-          <div class="age-heading">
-            <label class="field-label" for="demo-age">Edad del hijo o hija</label
-            ><output for="demo-age">{{ store.demoChild().profile.age }} <small>años</small></output>
-          </div>
-          <input
-            id="demo-age"
-            type="range"
-            min="10"
-            max="17"
-            step="1"
-            [ngModel]="store.demoChild().profile.age"
-            (ngModelChange)="store.configureProfile(store.demoChildId(), { age: +$event })"
-            [style.--range-fill]="((store.demoChild().profile.age - 10) / 7) * 100 + '%'"
-          />
-          <div class="range-labels"><span>10 años</span><span>17 años</span></div>
-          <div class="adaptive-note">
-            <app-icon name="spark" />
-            <div>
-              <strong>{{ store.demoBandLabel() }}</strong>
-              <p>
-                {{
-                  store.demoAgeBand() === 'junior'
-                    ? 'Ejemplos cotidianos y explicaciones cortas para empezar.'
-                    : store.demoAgeBand() === 'explorer'
-                      ? 'Presupuesto, ahorro y decisiones con más autonomía.'
-                      : 'Comparar opciones y planificar gastos e imprevistos.'
-                }}
-              </p>
+        <label class="field-label" for="demo-child">Hijo o hija</label>
+        <select
+          id="demo-child"
+          [ngModel]="store.demoChildId()"
+          (ngModelChange)="store.selectDemoChild($event)"
+        >
+          @for (child of store.family().children; track child.id) {
+            <option [value]="child.id">
+              {{ child.profile.name }} · {{ child.profile.age }} años
+            </option>
+          }
+        </select>
+        <div class="age-heading">
+          <label class="field-label" for="demo-age">Cambia la edad</label>
+          <output for="demo-age">{{ store.demoChild().profile.age }} <small>años</small></output>
+        </div>
+        <input
+          id="demo-age"
+          type="range"
+          min="10"
+          max="17"
+          step="1"
+          [ngModel]="store.demoChild().profile.age"
+          (ngModelChange)="store.configureProfile(store.demoChildId(), { age: +$event })"
+          [style.--range-fill]="((store.demoChild().profile.age - 10) / 7) * 100 + '%'"
+          aria-describedby="demo-age-help"
+        />
+        <div class="range-labels"><span>10 años</span><span>17 años</span></div>
+        <p class="demo-age-help" id="demo-age-help">
+          La vista del hijo adapta su estilo y actividades a esta edad.
+        </p>
+        <p class="demo-first-step">
+          <app-icon name="arrow" /><span>{{ firstStep() }}</span>
+        </p>
+      </div>
+
+      <div class="demo-optional">
+        <details class="demo-time" name="demo-options">
+          <summary><app-icon name="clock" /><span>Probar el paso de los días</span></summary>
+          <div class="demo-option-body">
+            <p>Avanza el tiempo para ver qué pasa con los plazos de un préstamo.</p>
+            <p class="demo-today">
+              Fecha del ejemplo: <strong>{{ dateLabel(store.family().today) }}</strong>
+            </p>
+            <div class="view-switch" role="group" aria-label="Avanzar los días de la demo">
+              <button (click)="advanceDate(1)">Pasar 1 día</button
+              ><button (click)="advanceDate(7)">Pasar 7 días</button>
             </div>
+            @if (panelMessage()) {
+              <p class="form-error" role="alert">{{ panelMessage() }}</p>
+            }
           </div>
-        </div>
-        <div class="panel-section">
-          <div class="eyebrow">02 <span>DINERO DE LA DEMO</span></div>
-          <label class="field-label" for="demo-balance">Dinero disponible <span>S/</span></label
-          ><input
-            id="demo-balance"
-            type="number"
-            min="0"
-            max="100000"
-            step="0.01"
-            [ngModel]="store.demoChild().balance"
-            (change)="changeNumber('balance', $any($event.target).value)"
-          />
-          @if (store.demoChild().goals[0]; as g) {
-            <label class="field-label" for="demo-saved"
-              >Ahorro de la primera meta <span>S/</span></label
-            ><input
-              id="demo-saved"
+        </details>
+
+        <details class="demo-settings" name="demo-options">
+          <summary><app-icon name="edit" /><span>Editar los datos del ejemplo</span></summary>
+          <div class="demo-option-body">
+            <p>Estos ajustes preparan la demo. No cuentan como aportes ni retiros.</p>
+            <label class="field-label" for="demo-name">Nombre</label>
+            <input
+              id="demo-name"
+              maxlength="24"
+              [ngModel]="store.demoChild().profile.name"
+              (ngModelChange)="store.configureProfile(store.demoChildId(), { name: $event })"
+              autocomplete="off"
+            />
+            <label class="field-label" for="demo-balance">Dinero disponible (S/)</label>
+            <input
+              id="demo-balance"
               type="number"
               min="0"
-              [max]="g.target"
+              max="100000"
               step="0.01"
-              [ngModel]="g.saved"
-              (change)="changeNumber('saved', $any($event.target).value)"
+              [ngModel]="store.demoChild().balance"
+              (change)="changeNumber('balance', $any($event.target).value)"
             />
-            <small class="input-hint"
-              >De {{ money(g.target) }} para {{ g.name.toLowerCase() }}.</small
-            >
-          }
-        </div>
-        <div class="panel-section last">
-          <div class="eyebrow">03 <span>FECHA Y DINERO FAMILIAR</span></div>
-          <label class="field-label" for="demo-date">Fecha simulada</label
-          ><input
-            id="demo-date"
-            type="date"
-            [ngModel]="store.family().today"
-            (change)="changeDate($any($event.target).value)"
-          />
-          <div class="view-switch">
-            <button (click)="advanceDate(1)">+1 día</button
-            ><button (click)="advanceDate(7)">+7 días</button>
-          </div>
-          <label class="field-label" for="demo-family-funds"
-            >Dinero familiar para préstamos (S/)</label
-          ><input
-            id="demo-family-funds"
-            type="number"
-            min="0"
-            max="100000"
-            step="0.01"
-            [ngModel]="store.family().parent.balance"
-            (change)="store.setFamilyFunds(+$any($event.target).value)"
-          />
-          @if (panelMessage()) {
-            <p class="form-error" role="alert">{{ panelMessage() }}</p>
-          }
-          <p class="panel-hint">
-            Los ajustes cambian el ejemplo y se guardan en este navegador. No se registran como
-            aportes ni retiros.
-          </p>
-          <p class="panel-hint">
-            Para presentar: usa nombres ficticios. El selector alterna roles simulados; no es un
-            inicio de sesión real. La fecha permite demostrar vencimientos sin esperar.
-          </p>
-        </div>
-      } @else {
-        <div class="scenario-list">
-          <p>Carga un ejemplo para probar el ahorro y los retiros en familia.</p>
-          @for (s of scenarios; track s.id) {
-            <button class="scenario-button" (click)="scenarioConfirm = s.id">
-              <span class="feature-icon"><app-icon [name]="s.icon" /></span
-              ><span
-                ><strong>{{ s.title }}</strong
-                ><small>{{ s.text }}</small></span
-              ><app-icon name="chevron" />
-            </button>
-            @if (scenarioConfirm === s.id) {
-              <div class="scenario-confirm">
-                <p>
-                  Se restablecerán los saldos, metas, préstamos y fecha de toda la familia. Se
-                  conservan los nombres, edades y preferencias de los perfiles.
-                </p>
-                <div class="row">
-                  <button class="secondary" (click)="scenarioConfirm = ''">Volver</button
-                  ><button class="primary" (click)="loadScenario(s.id)">
-                    Reiniciar con esta historia
-                  </button>
-                </div>
-              </div>
+            @if (store.demoChild().goals[0]; as g) {
+              <label class="field-label" for="demo-saved">Ahorro en «{{ g.name }}» (S/)</label>
+              <input
+                id="demo-saved"
+                type="number"
+                min="0"
+                [max]="g.target"
+                step="0.01"
+                [ngModel]="g.saved"
+                (change)="changeNumber('saved', $any($event.target).value)"
+              />
+              <small class="input-hint">La meta es {{ money(g.target) }}.</small>
             }
-          }
-        </div>
-      }
-      <div class="panel-footer">
-        <app-icon name="info" /><span>Prototipo independiente · Dinero ficticio.</span>
+            <label class="field-label" for="demo-family-funds"
+              >Dinero del adulto para prestar (S/)</label
+            >
+            <input
+              id="demo-family-funds"
+              type="number"
+              min="0"
+              max="100000"
+              step="0.01"
+              [ngModel]="store.family().parent.balance"
+              (change)="store.setFamilyFunds(+$any($event.target).value)"
+            />
+          </div>
+        </details>
+
+        <details class="demo-examples" name="demo-options">
+          <summary><app-icon name="reset" /><span>Empezar con otro ejemplo</span></summary>
+          <div class="demo-option-body scenario-list">
+            <p>Cada ejemplo abre la vista del hijo para probar una situación.</p>
+            @for (s of scenarios; track s.id) {
+              <button class="scenario-button" (click)="scenarioConfirm = s.id">
+                <span class="feature-icon"><app-icon [name]="s.icon" /></span>
+                <span
+                  ><strong>{{ s.title }}</strong
+                  ><small>{{ s.text }}</small></span
+                ><app-icon name="chevron" />
+              </button>
+              @if (scenarioConfirm === s.id) {
+                <div class="scenario-confirm">
+                  <p>
+                    Este ejemplo reemplazará los ahorros, préstamos y fechas de toda la familia. Se
+                    conservan los nombres y las edades.
+                  </p>
+                  <div class="scenario-confirm-actions">
+                    <button class="secondary" (click)="scenarioConfirm = ''">
+                      Conservar lo que probé
+                    </button>
+                    <button class="primary" (click)="loadScenario(s.id)">Cargar ejemplo</button>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </details>
       </div>
+      <p class="demo-footnote">Dinero ficticio. Los cambios se guardan en este navegador.</p>
     </aside>
   </main>
   <footer class="studio-footer">
@@ -292,14 +265,10 @@
       </button>
     </div>
     <button class="presentation-exit quiet-button" (click)="togglePresentation()">
-      <app-icon name="expand" />Salir de presentación
+      <app-icon name="expand" />Volver a la vista completa
     </button>
   }
-  <button
-    class="mobile-controls"
-    aria-label="Abrir controles de demo"
-    (click)="panelOpen.set(true)"
-  >
+  <button class="mobile-controls" aria-label="Abrir controles de demo" (click)="openPanel()">
     <app-icon name="sliders" />
   </button>
 </div>

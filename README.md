@@ -27,8 +27,8 @@ La compilación estática queda en `dist/sueno/browser`. No abrir `src/index.htm
 2. **Protegido**: explicar el compromiso; abrir la meta y solicitar un retiro anticipado de S/ 30, indicando un motivo. El dinero sigue reservado.
 3. **Vista del adulto**: alternar con el selector externo, abrir el detalle de Alex y autorizar el retiro o elegir conversar primero. Mostrar un aporte voluntario y enviar ánimo; el mensaje aparece en el Inicio del hijo. Seleccionar a Lucía para mostrar sus propias metas y estadísticas.
 4. **Aprende**: mover la edad a 10 y luego a 17 desde el panel. Cambian el estilo visual, los ejemplos, el vocabulario y las actividades.
-5. **Escenarios**: cargar «¡Lo logré!» para mostrar la meta al 100%. Los escenarios piden confirmar porque reemplazan los saldos y metas simulados; conservan nombre, edad y preferencias.
-6. **Modo presentación**: oculta los elementos externos y amplía el teléfono. El botón superior permite salir.
+5. **Ejemplos**: abrir «Empezar con otro ejemplo» y cargar «Ver una meta cumplida» para mostrar la meta al 100%. Pide confirmar porque reemplaza los datos financieros de toda la familia; conserva perfiles y abre al hijo seleccionado.
+6. **Ampliar teléfono**: oculta los paneles externos y amplía el teléfono. «Volver a la vista completa» permite salir.
 
 En una pantalla estrecha la app ocupa el celular real. El botón flotante de controles abre la configuración de demostración.
 
@@ -47,6 +47,8 @@ Cada acuerdo distingue cumplimiento y calidad de evidencia. Los reportes tienen 
 **Documento clave: [ORIGEN](docs/CLAVE-ORIGEN.md)** reúne los flujos implementados, la investigación sobre fotos y alternativas, los límites legales/técnicos y los supuestos de seguridad de producción.
 
 La [guía de voz y lenguaje](docs/VOZ-Y-LENGUAJE.md) explica la revisión de los textos y sus fuentes: los préstamos muestran una actividad y las veces que debe hacerse, las acciones nombran su resultado y los errores indican qué corregir. El modelo interno conserva sus identificadores y reglas.
+
+El panel externo muestra primero la vista, el hijo y la edad. Los ajustes de montos, el avance de los días y los ejemplos quedan en secciones desplegables. Las [tres etapas visuales](docs/DISENO-POR-EDAD.md) usan composición, geometría y jerarquía distintas, manteniendo el mismo dinero y las mismas operaciones.
 
 ## Qué funciona
 
@@ -76,6 +78,7 @@ La [guía de voz y lenguaje](docs/VOZ-Y-LENGUAJE.md) explica la revisión de los
 | `src/app/core/lessons.ts` | Contenido y respuestas según edad |
 | `src/app/shared/` | Iconos, ilustraciones SVG y tarjeta de meta |
 | `src/styles.css` | Tokens de color, teléfono y estilos adaptativos |
+| `src/age-themes.css` | Composición y geometría de las tres etapas visuales |
 | `public/fonts/` | Fuentes locales y sus licencias SIL OFL |
 | `tests/` | Pruebas de recorridos en Chromium |
 | `docs/DISENO.md` | Referencias y decisiones visuales |
