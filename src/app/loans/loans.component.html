@@ -1,0 +1,737 @@
+@if (notice()) {
+  <div class="loan-notice" role="status">
+    <app-icon name="check" />
+    <p>{{ notice() }}</p>
+    <button class="icon-button" aria-label="Ocultar mensaje" (click)="notice.set('')">
+      <app-icon name="close" />
+    </button>
+  </div>
+}
+@if (view() !== 'list') {
+  <button class="text-button loan-back" (click)="navigate('list')">← Volver a préstamos</button>
+}
+<div class="loan-context">
+  <span class="tiny-pill">{{
+    parent() ? 'PARA ' + child().profile.name.toUpperCase() : 'CON MI FAMILIA'
+  }}</span
+  ><small>Fecha de la demo: {{ dateLabel(today()) }}</small>
+</div>
+@switch (view()) {
+  @case ('list') {
+    <section class="loan-intro">
+      <span class="eyebrow">APRENDER A CUMPLIR LO ACORDADO</span>
+      <h1>{{ parent() ? 'Préstamos en familia.' : 'Un anticipo. Un acuerdo.' }}</h1>
+      <p>
+        {{
+          parent()
+            ? 'Condiciones claras, entregas visibles y espacio para conversar.'
+            : 'Tu familia puede adelantarte dinero. Tú cumples acciones que acuerdan juntos.'
+        }}
+      </p>
+      <div class="loan-definition">
+        Simulación educativa · Se devuelve con acciones, no con dinero.
+      </div>
+    </section>
+    <button class="primary full" [disabled]="open()" (click)="start()">
+      <app-icon name="plus" />{{ parent() ? 'Proponer un préstamo' : 'Solicitar un préstamo' }}
+    </button>
+    @if (open()) {
+      <p class="input-hint">Un préstamo o solicitud a la vez para este perfil.</p>
+    }
+    <div class="loan-filters" aria-label="Filtrar préstamos">
+      @for (f of ['todos', 'solicitudes', 'vigentes', 'mora', 'cerrados']; track f) {
+        <button [class.active]="filter() === f" (click)="filter.set(f)">
+          {{
+            f === 'todos'
+              ? 'Todos'
+              : f === 'solicitudes'
+                ? 'Solicitudes'
+                : f === 'vigentes'
+                  ? 'Vigentes'
+                  : f === 'mora'
+                    ? 'En mora'
+                    : 'Completados'
+          }}
+        </button>
+      }
+    </div>
+    @for (a of visible(); track a.id) {
+      <button class="loan-card" (click)="detail(a)">
+        <div class="row">
+          <span
+            class="pill"
+            [class.green]="a.status === 'completed'"
+            [class.amber]="status(a) === 'En mora'"
+            ><app-icon [name]="a.status === 'completed' ? 'check' : 'clock'" />{{ status(a) }}</span
+          ><app-icon name="chevron" />
+        </div>
+        <h3>{{ a.title }}</h3>
+        <div class="row">
+          <strong>{{ money(a.amount) }}</strong
+          ><small>{{
+            a.status === 'requested'
+              ? 'Por revisar'
+              : a.status === 'offered'
+                ? 'Aún no entregado'
+                : 'Anticipo familiar'
+          }}</small>
+        </div>
+        @if (a.acceptedAt) {
+          <div class="progress-track"><span [style.width.%]="progress(a)"></span></div>
+          <p>{{ progress(a) }}% de unidades base confirmadas · {{ dateLabel(a.dueDate) }}</p>
+        }
+      </button>
+    } @empty {
+      <div class="empty-card">
+        <app-icon name="wallet" />
+        <h3>
+          {{
+            filter() === 'todos'
+              ? 'Cada acuerdo empieza conversando.'
+              : 'No hay préstamos en este estado.'
+          }}
+        </h3>
+        <p>Las solicitudes y sus condiciones tendrán aquí su propio espacio.</p>
+      </div>
+    }
+  }
+  @case ('request') {
+    <h2 class="loan-form-title">Cuéntale tu plan.</h2>
+    <p class="sheet-description">
+      Tu familia revisará el monto y propondrá las condiciones. Solicitar no suma dinero a tu
+      cuenta.
+    </p>
+    <form (ngSubmit)="request()">
+      <label class="field-label" for="loan-request-amount">Monto que solicitas (S/)</label
+      ><input
+        id="loan-request-amount"
+        name="amount"
+        type="number"
+        min="0.01"
+        max="10000"
+        step="0.01"
+        [(ngModel)]="amount"
+        required
+      />
+      <label class="field-label" for="loan-request-goal">¿A qué sueño se relaciona?</label
+      ><select id="loan-request-goal" name="goal" [(ngModel)]="goalId">
+        <option value="">Otro propósito</option>
+        @for (g of child().goals; track g.id) {
+          @if (!g.completedAt && g.saved < g.target) {
+            <option [ngValue]="g.id">{{ g.name }}</option>
+          }
+        }
+      </select>
+      <label class="field-label" for="loan-request-reason">¿Para qué lo necesitas?</label
+      ><textarea
+        id="loan-request-reason"
+        name="reason"
+        [(ngModel)]="reason"
+        required
+        maxlength="180"
+        rows="3"
+        placeholder="Explica tu idea a tu familia"
+      ></textarea
+      ><button class="primary full form-submit" type="submit">
+        Enviar solicitud<app-icon name="arrow" />
+      </button>
+    </form>
+  }
+  @case ('offer') {
+    <div class="wizard-progress">
+      <span>PASO {{ step + 1 }} DE 4</span
+      ><strong>{{ ['El anticipo', 'Las entregas', 'La demora', 'Revisar juntos'][step] }}</strong>
+    </div>
+    <form (ngSubmit)="nextOffer()">
+      @switch (step) {
+        @case (0) {
+          <h2 class="loan-form-title">Un plan para {{ child().profile.name }}.</h2>
+          <p class="sheet-description">
+            Fondo familiar disponible: <strong>{{ money(store.family().parent.balance) }}</strong
+            >. El dinero se entrega después de su aceptación.
+          </p>
+          <label class="field-label" for="loan-title">Nombre del préstamo</label
+          ><input id="loan-title" name="title" [(ngModel)]="title" maxlength="60" required /><label
+            class="field-label"
+            for="loan-offer-amount"
+            >Anticipo (S/)</label
+          ><input
+            id="loan-offer-amount"
+            name="amount"
+            type="number"
+            min="0.01"
+            [max]="store.family().parent.balance"
+            step="0.01"
+            [(ngModel)]="terms.amount"
+            required
+          />
+          @if (!selected()) {
+            <label class="field-label" for="loan-offer-goal">Sueño relacionado</label
+            ><select id="loan-offer-goal" name="goal" [(ngModel)]="goalId">
+              <option value="">Otro propósito</option>
+              @for (g of child().goals; track g.id) {
+                @if (!g.completedAt && g.saved < g.target) {
+                  <option [ngValue]="g.id">{{ g.name }}</option>
+                }
+              }
+            </select>
+          }
+          <label class="field-label" for="loan-terms">Condiciones que quieren acordar</label
+          ><textarea
+            id="loan-terms"
+            name="terms"
+            [(ngModel)]="terms.terms"
+            maxlength="400"
+            rows="3"
+          ></textarea>
+        }
+        @case (1) {
+          <h2 class="loan-form-title">¿Cómo lo devolverá?</h2>
+          <label class="field-label" for="loan-unit">Unidad de pago, en tus palabras</label
+          ><input
+            id="loan-unit"
+            name="unit"
+            [(ngModel)]="terms.unitLabel"
+            maxlength="120"
+            required
+            placeholder="Ej. Sesión de lectura de 15 minutos"
+          />
+          <p class="input-hint">
+            Elige una acción repetible, segura y adecuada a su edad. No condiciones necesidades
+            básicas.
+          </p>
+          <div class="form-columns">
+            <div>
+              <label class="field-label" for="loan-total">Unidades en total</label
+              ><input
+                id="loan-total"
+                name="total"
+                type="number"
+                min="1"
+                max="500"
+                step="1"
+                [(ngModel)]="terms.totalUnits"
+                required
+              />
+            </div>
+            <div>
+              <label class="field-label" for="loan-per-delivery">Unidades por entrega</label
+              ><input
+                id="loan-per-delivery"
+                name="per"
+                type="number"
+                min="1"
+                [max]="terms.totalUnits"
+                step="1"
+                [(ngModel)]="terms.unitsPerInstallment"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-columns">
+            <div>
+              <label class="field-label" for="loan-interval">Cada cuántos días</label
+              ><input
+                id="loan-interval"
+                name="interval"
+                type="number"
+                min="1"
+                max="90"
+                step="1"
+                [(ngModel)]="terms.intervalDays"
+                required
+              />
+            </div>
+            <div>
+              <label class="field-label" for="loan-first-due">Primera entrega en días</label
+              ><input
+                id="loan-first-due"
+                name="first"
+                type="number"
+                min="1"
+                max="90"
+                step="1"
+                [(ngModel)]="terms.firstDueDays"
+                required
+              />
+            </div>
+          </div>
+          <p class="suggestion">
+            {{ terms.totalUnits }} unidades, {{ terms.unitsPerInstallment }} por entrega, cada
+            {{ terms.intervalDays }} días. Los plazos empiezan al aceptar el anticipo.
+          </p>
+        }
+        @case (2) {
+          <h2 class="loan-form-title">Decidir sobre la demora.</h2>
+          <label class="protect-toggle" for="loan-late-enabled"
+            ><app-icon name="clock" /><span
+              ><strong>Unidades adicionales por demora</strong
+              ><small>Opcional, con tope y aceptación previa.</small></span
+            ><input
+              id="loan-late-enabled"
+              name="enabled"
+              type="checkbox"
+              [(ngModel)]="terms.latePolicy.enabled"
+          /></label>
+          @if (terms.latePolicy.enabled) {
+            <div class="form-columns">
+              <div>
+                <label class="field-label" for="loan-late-rate">Unidades extra por día</label
+                ><input
+                  id="loan-late-rate"
+                  name="rate"
+                  type="number"
+                  min="1"
+                  max="100"
+                  [(ngModel)]="terms.latePolicy.unitsPerDay"
+                  required
+                />
+              </div>
+              <div>
+                <label class="field-label" for="loan-late-cap">Máximo de unidades extra</label
+                ><input
+                  id="loan-late-cap"
+                  name="cap"
+                  type="number"
+                  [min]="terms.latePolicy.unitsPerDay"
+                  max="1000"
+                  [(ngModel)]="terms.latePolicy.capUnits"
+                  required
+                />
+              </div>
+            </div>
+            <div class="form-columns">
+              <div>
+                <label class="field-label" for="loan-grace">Días de gracia</label
+                ><input
+                  id="loan-grace"
+                  name="grace"
+                  type="number"
+                  min="0"
+                  max="30"
+                  [(ngModel)]="terms.latePolicy.graceDays"
+                  required
+                />
+              </div>
+              <div>
+                <label class="field-label" for="loan-extra-days">Plazo adicional en días</label
+                ><input
+                  id="loan-extra-days"
+                  name="extra"
+                  type="number"
+                  min="1"
+                  max="90"
+                  [(ngModel)]="terms.latePolicy.paymentWindowDays"
+                  required
+                />
+              </div>
+            </div>
+            <div class="suggestion">
+              Se usa la misma unidad: {{ terms.unitLabel }}. Se suma una sola vez por día con
+              entregas pendientes, sin interés compuesto, hasta el tope acordado.
+            </div>
+          } @else {
+            <div class="info-card">
+              <app-icon name="heart" />
+              <p>
+                Sin unidades adicionales. Los retrasos quedan registrados y pueden conversar o
+                ampliar los plazos.
+              </p>
+            </div>
+          }
+        }
+        @case (3) {
+          <h2 class="loan-form-title">Así quedaría el acuerdo.</h2>
+          <div class="loan-contract">
+            <span>PARA {{ child().profile.name.toUpperCase() }}</span>
+            <h3>{{ title }}</h3>
+            <strong>{{ money(terms.amount) }}</strong>
+            <p>{{ terms.totalUnits }} × {{ terms.unitLabel }}</p>
+            <p>
+              {{ terms.unitsPerInstallment }} unidades cada {{ terms.intervalDays }} días. Primera
+              entrega {{ terms.firstDueDays }} días después de aceptar.
+            </p>
+            <p>{{ terms.terms }}</p>
+            <p>
+              {{
+                terms.latePolicy.enabled
+                  ? 'Demora: ' +
+                    terms.latePolicy.unitsPerDay +
+                    ' unidades por día, máximo ' +
+                    terms.latePolicy.capUnits +
+                    ', con ' +
+                    terms.latePolicy.graceDays +
+                    ' días de gracia.'
+                  : 'Sin unidades adicionales por demora.'
+              }}
+            </p>
+          </div>
+          <p class="sheet-description">
+            {{ child().profile.name }} deberá leer y aceptar esta propuesta. El dinero irá a su
+            saldo disponible; sus ahorros protegidos no se modifican.
+          </p>
+        }
+      }
+      <div class="wizard-actions">
+        @if (step > 0) {
+          <button class="secondary" type="button" (click)="step = step - 1; error = ''">
+            Anterior
+          </button>
+        }
+        <button class="primary" type="submit">
+          {{ step === 3 ? 'Enviar propuesta' : 'Continuar' }}<app-icon name="arrow" />
+        </button>
+      </div>
+    </form>
+  }
+  @case ('detail') {
+    @if (selected(); as a) {
+      <div class="loan-detail-hero">
+        <span
+          class="pill"
+          [class.green]="a.status === 'completed'"
+          [class.amber]="status(a) === 'En mora'"
+          >{{ status(a) }}</span
+        >
+        <h2>{{ a.title }}</h2>
+        <strong>{{ money(a.amount) }}</strong>
+        <p>{{ a.reason }}</p>
+      </div>
+      @if (a.status === 'requested') {
+        <div class="info-card">
+          <app-icon name="clock" />
+          <p>
+            Tu solicitud está en revisión. Todavía no hay un anticipo entregado ni obligaciones
+            activas.
+          </p>
+        </div>
+        @if (parent()) {
+          <button class="primary full form-submit" (click)="offer(a)">Proponer condiciones</button
+          ><button class="secondary full form-submit" (click)="decline()">
+            Conversar otro plan
+          </button>
+        }
+      }
+      @if (a.status === 'offered' || a.acceptedAt) {
+        <div class="section-heading"><h2>Lo que acordamos</h2></div>
+        <div class="loan-contract">
+          <p><b>Unidad:</b> {{ a.unitLabel ?? a.tasks[0]?.title }}</p>
+          <p><b>Cantidad:</b> {{ a.totalUnits ?? a.tasks.length }} unidades base</p>
+          <p>
+            <b>Frecuencia:</b> {{ a.unitsPerInstallment ?? 1 }} unidad(es) cada
+            {{ a.intervalDays ?? a.days }} días
+          </p>
+          <p>{{ a.terms }}</p>
+          <p>
+            {{
+              a.acceptedAt
+                ? 'Anticipo recibido el ' + dateLabel(a.acceptedAt)
+                : 'Los vencimientos empezarán al aceptar.'
+            }}
+          </p>
+          @if (a.latePolicy?.enabled) {
+            <p class="loan-policy-text">
+              Demora: {{ a.latePolicy!.unitsPerDay }} unidades por día, tope
+              {{ a.latePolicy!.capUnits }}, gracia {{ a.latePolicy!.graceDays }} día(s).
+              {{ a.latePolicy!.paymentWindowDays }} días adicionales para completar el recargo. Sin
+              capitalización.
+            </p>
+          } @else {
+            <p>Sin unidades adicionales por demora.</p>
+          }
+        </div>
+      }
+      @if (a.status === 'offered' && !parent()) {
+        <label class="loan-consent"
+          ><input type="checkbox" [(ngModel)]="accepted" /><span
+            >Leí el monto, las acciones, los plazos y las condiciones. Estoy de acuerdo.</span
+          ></label
+        ><button class="primary full" [disabled]="!accepted" (click)="accept(true)">
+          Aceptar y recibir {{ money(a.amount) }}</button
+        ><button class="secondary full form-submit" (click)="accept(false)">
+          Prefiero conversar
+        </button>
+      }
+      @if (a.status === 'active' || a.status === 'completed') {
+        <div class="section-heading">
+          <h2>Entregas del préstamo</h2>
+          <span class="tiny-pill">{{ progress(a) }}% BASE</span>
+        </div>
+        @for (t of a.tasks; track t.id; let i = $index) {
+          <article class="installment-card">
+            <div class="row">
+              <strong>Entrega {{ i + 1 }}</strong
+              ><span class="tiny-pill" [class.green]="taskValidated(t) >= (t.units ?? 1)">{{
+                dateLabel(t.dueDate ?? a.dueDate)
+              }}</span>
+            </div>
+            <h3>{{ t.title }}</h3>
+            <p>{{ taskValidated(t) }} de {{ t.units ?? 1 }} unidades confirmadas</p>
+            @for (r of taskReports(t); track r.id) {
+              <div class="unit-report">
+                <span
+                  >{{ r.units }} unidad(es) · {{ dateLabel(r.submittedAt)
+                  }}<small>{{
+                    r.status === 'validated'
+                      ? 'Confirmadas'
+                      : r.status === 'submitted'
+                        ? 'En revisión'
+                        : r.feedback
+                  }}</small></span
+                >
+                @if (parent() && r.status === 'submitted' && a.status === 'active') {
+                  <div class="row">
+                    <button class="small-action" (click)="review(t.id, r.id, true)">
+                      Confirmar</button
+                    ><button class="small-action muted" (click)="review(t.id, r.id, false)">
+                      Revisar
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+            @if (!parent() && a.status === 'active' && taskReported(t) < (t.units ?? 1)) {
+              <button class="secondary full" (click)="report(t.id)">Registrar entrega</button>
+            }
+          </article>
+        }
+        @if (parent() && a.status === 'active') {
+          <label class="field-label" for="review-feedback"
+            >Mensaje si hay que revisar una entrega</label
+          ><input id="review-feedback" [(ngModel)]="feedback" maxlength="180" />
+        }
+        @if (a.latePolicy?.enabled || penalty(a) > 0) {
+          <div class="penalty-card">
+            <div class="row">
+              <h3>Unidades por demora</h3>
+              <app-icon name="clock" />
+            </div>
+            <p>
+              {{ penalty(a) }} generadas · {{ penaltyValidated(a) }} confirmadas · tope
+              {{ a.latePolicy?.capUnits ?? 0 }}
+            </p>
+            <p>La misma unidad: {{ a.unitLabel ?? a.tasks[0]?.title }}</p>
+            <p>Plazo adicional: {{ dateLabel(penaltyDeadline(a)) }}</p>
+            @for (r of a.penaltyReports ?? []; track r.id) {
+              <div class="unit-report">
+                <span
+                  >{{ r.units }} unidad(es) · {{ dateLabel(r.submittedAt)
+                  }}<small>{{
+                    r.status === 'validated'
+                      ? 'Confirmadas'
+                      : r.status === 'submitted'
+                        ? 'En revisión'
+                        : r.feedback
+                  }}</small></span
+                >
+                @if (parent() && r.status === 'submitted' && a.status === 'active') {
+                  <div class="row">
+                    <button class="small-action" (click)="review('penalty', r.id, true)">
+                      Confirmar</button
+                    ><button class="small-action muted" (click)="review('penalty', r.id, false)">
+                      Revisar
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+            @if (!parent() && a.status === 'active' && penaltyReported(a) < penalty(a)) {
+              <button class="secondary full" (click)="report('penalty')">
+                Registrar unidades adicionales
+              </button>
+            }
+          </div>
+        }
+        @if (a.proposedDueDate) {
+          <div class="pending-notice">
+            <div>
+              <strong>Propuesta de nuevo plazo: {{ dateLabel(a.proposedDueDate) }}</strong>
+              <p>El plazo vigente sigue siendo {{ dateLabel(a.dueDate) }} hasta su aceptación.</p>
+              @if (!parent()) {
+                <div class="row">
+                  <button class="primary" (click)="acceptExtension(true)">Aceptar plazo</button
+                  ><button class="secondary" (click)="acceptExtension(false)">
+                    Conservar actual
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        }
+        @if (a.proposedLatePolicy) {
+          <div class="pending-notice">
+            <div>
+              <strong>Nuevas condiciones por demora</strong>
+              <p>
+                {{ a.proposedLatePolicy.unitsPerDay }} unidades/día · máximo
+                {{ a.proposedLatePolicy.capUnits }} ·
+                {{ a.proposedLatePolicy.paymentWindowDays }} días adicionales. Desde su aceptación,
+                sin cobro retroactivo.
+              </p>
+              @if (!parent()) {
+                <div class="row">
+                  <button class="primary" (click)="acceptPolicy(true)">Aceptar condiciones</button
+                  ><button class="secondary" (click)="acceptPolicy(false)">
+                    Conservar actuales
+                  </button>
+                </div>
+              }
+            </div>
+          </div>
+        }
+        @if (parent() && a.status === 'active') {
+          <div class="loan-management">
+            <h3>Administrar este préstamo</h3>
+            <button class="secondary full" (click)="extension()">Proponer nuevo plazo</button>
+            @if (overdue(a) > 0) {
+              <button class="secondary full" (click)="editPolicy()">
+                Configurar unidades por mora
+              </button>
+            }
+            @if (a.latePolicy?.enabled) {
+              <button class="text-button" (click)="disablePolicy()">
+                Desactivar recargo por demora
+              </button>
+            }
+            <p>
+              Solo se completa cuando las unidades base y adicionales acordadas están confirmadas.
+              El retraso no se borra al desactivar el recargo.
+            </p>
+          </div>
+        }
+        @if (a.status === 'completed') {
+          <div class="no-requests">
+            <app-icon name="trophy" />
+            <div>
+              <strong>¡Acuerdo cumplido!</strong>
+              <p>
+                Entregado {{ dateLabel(a.completedAt) }} · confirmado
+                {{ dateLabel(a.validatedAt) }}. El dinero recibido no se vuelve a descontar.
+              </p>
+            </div>
+          </div>
+        }
+      }
+      <details class="loan-timeline">
+        <summary>Ver historial del préstamo</summary>
+        @for (e of a.events; track e.id) {
+          <div>
+            <small
+              >{{ dateLabel(e.at) }} ·
+              {{
+                e.actor === 'system'
+                  ? 'Registro de la demo'
+                  : e.actor === 'parent'
+                    ? 'Familia'
+                    : child().profile.name
+              }}</small
+            >
+            <p>{{ e.text }}</p>
+          </div>
+        }
+      </details>
+    }
+  }
+  @case ('report') {
+    @if (selected(); as a) {
+      <h2 class="loan-form-title">Un paso que ya hiciste.</h2>
+      <p class="sheet-description">
+        {{ a.unitLabel ?? a.tasks[0]?.title }}. Puedes registrar hasta {{ remaining }} unidades. Tu
+        familia deberá confirmarlas.
+      </p>
+      <form (ngSubmit)="sendReport()">
+        <label class="field-label" for="report-units">Unidades realizadas</label
+        ><input
+          id="report-units"
+          name="units"
+          type="number"
+          min="1"
+          [max]="remaining"
+          step="1"
+          [(ngModel)]="units"
+          required
+        /><button class="primary full form-submit" type="submit">Enviar a revisión</button>
+      </form>
+    }
+  }
+  @case ('extension') {
+    <h2 class="loan-form-title">Un plazo que puedan cumplir.</h2>
+    <p class="sheet-description">
+      Se moverán las entregas pendientes. Las confirmadas conservan su fecha. El adolescente debe
+      aceptar el cambio.
+    </p>
+    <form (ngSubmit)="proposeExtension()">
+      <label class="field-label" for="extension-date">Nuevo vencimiento final</label
+      ><input
+        id="extension-date"
+        name="date"
+        type="date"
+        [min]="today()"
+        [(ngModel)]="newDate"
+        required
+      /><button class="primary full form-submit" type="submit">Proponer ampliación</button>
+    </form>
+  }
+  @case ('policy') {
+    @if (selected(); as a) {
+      <h2 class="loan-form-title">Condiciones por demora.</h2>
+      <p class="sheet-description">
+        Unidad ya acordada: <strong>{{ a.unitLabel ?? a.tasks[0]?.title }}</strong
+        >. Una nueva condición se propone al adolescente antes de aplicarse.
+      </p>
+      <form (ngSubmit)="savePolicy()">
+        <label class="protect-toggle" for="policy-enabled"
+          ><span
+            ><strong>Activar unidades adicionales</strong
+            ><small>Puedes desactivarlas sin borrar el registro del retraso.</small></span
+          ><input id="policy-enabled" name="enabled" type="checkbox" [(ngModel)]="policy.enabled"
+        /></label>
+        @if (policy.enabled) {
+          <label class="field-label" for="policy-rate">Unidades extra por día de demora</label
+          ><input
+            id="policy-rate"
+            name="rate"
+            type="number"
+            min="1"
+            max="100"
+            [(ngModel)]="policy.unitsPerDay"
+            required
+          /><label class="field-label" for="policy-cap">Máximo de unidades adicionales</label
+          ><input
+            id="policy-cap"
+            name="cap"
+            type="number"
+            [min]="policy.unitsPerDay"
+            max="1000"
+            [(ngModel)]="policy.capUnits"
+            required
+          /><label class="field-label" for="policy-grace">Días de gracia</label
+          ><input
+            id="policy-grace"
+            name="grace"
+            type="number"
+            min="0"
+            max="30"
+            [(ngModel)]="policy.graceDays"
+            required
+          /><label class="field-label" for="policy-window">Plazo adicional en días</label
+          ><input
+            id="policy-window"
+            name="window"
+            type="number"
+            min="1"
+            max="90"
+            [(ngModel)]="policy.paymentWindowDays"
+            required
+          />
+        }
+        <button class="primary full form-submit" type="submit">
+          {{ policy.enabled ? 'Proponer condiciones' : 'Desactivar recargo' }}
+        </button>
+      </form>
+    }
+  }
+}
+@if (error) {
+  <p class="form-error" role="alert">{{ error }}</p>
+}

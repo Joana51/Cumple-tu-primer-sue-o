@@ -28,20 +28,20 @@
       </h1>
       <p>Aprender a cuidar su dinero.<br />Con metas propias y una familia<br />que acompaña.</p>
       <div class="story-features">
-        <button (click)="page.set('protegido')">
+        <button (click)="showFeature('protegido')">
           <span class="feature-icon"><app-icon name="shield" /></span
           ><span
             ><strong>Ahorro con propósito</strong
             ><small>Su meta tiene un lugar seguro.</small></span
           ><app-icon name="chevron" />
         </button>
-        <button (click)="page.set('familia')">
+        <button (click)="showFeature('familia')">
           <span class="feature-icon peach"><app-icon name="heart" /></span
           ><span
             ><strong>Crecer en familia</strong><small>Más confianza. Más motivación.</small></span
           ><app-icon name="chevron" />
         </button>
-        <button (click)="page.set('aprende')">
+        <button (click)="showFeature('aprende')">
           <span class="feature-icon lavender"><app-icon name="book" /></span
           ><span
             ><strong>Aprender a su ritmo</strong
@@ -64,7 +64,11 @@
         <div class="phone-side-key one"></div>
         <div class="phone-side-key two"></div>
         <div class="phone-side-key three"></div>
-        <app-mobile [page]="page()" (pageChange)="page.set($event)" />
+        @if (store.role() === 'child') {
+          <app-mobile [page]="page()" (pageChange)="page.set($event)" />
+        } @else {
+          <app-parent [page]="parentPage()" (pageChange)="parentPage.set($event)" />
+        }
       </div>
       <div class="phone-below">
         <span></span> Tu primer ahorro, tu primer logro, tu futuro financiero.
@@ -106,19 +110,48 @@
         </button>
       </div>
       @if (panelTab() === 'profile') {
+        <div class="panel-role-section">
+          <label class="field-label" for="demo-child">Perfil de la demostración</label
+          ><select
+            id="demo-child"
+            [ngModel]="store.demoChildId()"
+            (ngModelChange)="store.selectDemoChild($event)"
+          >
+            @for (child of store.family().children; track child.id) {
+              <option [value]="child.id">
+                {{ child.profile.name }} · {{ child.profile.age }} años
+              </option>
+            }
+          </select>
+          <div class="view-switch" aria-label="Cambiar vista de demostración">
+            <button
+              [class.active]="store.role() === 'child'"
+              [attr.aria-pressed]="store.role() === 'child'"
+              (click)="switchRole('child')"
+            >
+              <app-icon name="user" />Vista del hijo</button
+            ><button
+              [class.active]="store.role() === 'parent'"
+              [attr.aria-pressed]="store.role() === 'parent'"
+              (click)="switchRole('parent')"
+            >
+              <app-icon name="heart" />Vista del adulto
+            </button>
+          </div>
+        </div>
         <div class="panel-section">
           <div class="eyebrow">01 <span>PERFIL SIMULADO</span></div>
           <label class="field-label" for="demo-name">Nombre</label
           ><input
             id="demo-name"
             maxlength="24"
-            [ngModel]="store.state().profile.name"
-            (ngModelChange)="store.profile({ name: $event })"
+            [ngModel]="store.demoChild().profile.name"
+            (ngModelChange)="store.configureProfile(store.demoChildId(), { name: $event })"
             autocomplete="off"
           />
           <div class="age-heading">
             <label class="field-label" for="demo-age">Edad del usuario</label
-            ><output for="demo-age">{{ store.state().profile.age }} <small>años</small></output>
+            ><output for="demo-age">{{ store.demoChild().profile.age }} <small>años</small></output>
           </div>
           <input
             id="demo-age"
@@ -126,20 +159,20 @@
             min="10"
             max="17"
             step="1"
-            [ngModel]="store.state().profile.age"
-            (ngModelChange)="store.profile({ age: +$event })"
-            [style.--range-fill]="((store.state().profile.age - 10) / 7) * 100 + '%'"
+            [ngModel]="store.demoChild().profile.age"
+            (ngModelChange)="store.configureProfile(store.demoChildId(), { age: +$event })"
+            [style.--range-fill]="((store.demoChild().profile.age - 10) / 7) * 100 + '%'"
           />
           <div class="range-labels"><span>10 años</span><span>17 años</span></div>
           <div class="adaptive-note">
             <app-icon name="spark" />
             <div>
-              <strong>{{ store.bandLabel() }}</strong>
+              <strong>{{ store.demoBandLabel() }}</strong>
               <p>
                 {{
-                  store.ageBand() === 'junior'
+                  store.demoAgeBand() === 'junior'
                     ? 'Más juego, ejemplos simples y pequeños descubrimientos.'
-                    : store.ageBand() === 'explorer'
+                    : store.demoAgeBand() === 'explorer'
                       ? 'Un equilibrio entre motivación, autonomía y planificación.'
                       : 'Diseño sobrio, presupuesto y decisiones con más contexto.'
                 }}
@@ -156,10 +189,10 @@
             min="0"
             max="100000"
             step="0.01"
-            [ngModel]="store.state().balance"
+            [ngModel]="store.demoChild().balance"
             (change)="changeNumber('balance', $any($event.target).value)"
           />
-          @if (store.state().goals[0]; as g) {
+          @if (store.demoChild().goals[0]; as g) {
             <label class="field-label" for="demo-saved"
               >Ahorrado en la primera meta <span>S/</span></label
             ><input
@@ -177,20 +210,37 @@
           }
         </div>
         <div class="panel-section last">
-          <div class="eyebrow">03 <span>PUNTO DE VISTA</span></div>
+          <div class="eyebrow">03 <span>TIEMPO Y FONDO FAMILIAR</span></div>
+          <label class="field-label" for="demo-date">Fecha simulada</label
+          ><input
+            id="demo-date"
+            type="date"
+            [ngModel]="store.family().today"
+            (change)="changeDate($any($event.target).value)"
+          />
           <div class="view-switch">
-            <button [class.active]="page() !== 'familia'" (click)="page.set('inicio')">
-              <app-icon name="user" />Adolescente</button
-            ><button [class.active]="page() === 'familia'" (click)="page.set('familia')">
-              <app-icon name="heart" />Familia
-            </button>
+            <button (click)="advanceDate(1)">+1 día</button
+            ><button (click)="advanceDate(7)">+7 días</button>
           </div>
+          <label class="field-label" for="demo-family-funds">Fondo para anticipos (S/)</label
+          ><input
+            id="demo-family-funds"
+            type="number"
+            min="0"
+            max="100000"
+            step="0.01"
+            [ngModel]="store.family().parent.balance"
+            (change)="store.setFamilyFunds(+$any($event.target).value)"
+          />
+          @if (panelMessage()) {
+            <p class="form-error" role="alert">{{ panelMessage() }}</p>
+          }
           <p class="panel-hint">
             Los cambios se reflejan al instante en el teléfono y se guardan en este navegador.
           </p>
           <p class="panel-hint">
-            Para presentar: usa un nombre ficticio. La vista familiar es una simulación sin
-            autenticación real.
+            Para presentar: usa nombres ficticios. El selector alterna roles simulados; no es un
+            inicio de sesión real. La fecha permite demostrar vencimientos sin esperar.
           </p>
         </div>
       } @else {
@@ -207,8 +257,8 @@
             @if (scenarioConfirm === s.id) {
               <div class="scenario-confirm">
                 <p>
-                  Se reemplazarán los saldos, metas y movimientos de esta demo. El perfil se
-                  conserva.
+                  Se restablecerán los saldos, metas, préstamos y fecha de toda la familia. Se
+                  conservan los nombres, edades y preferencias de los perfiles.
                 </p>
                 <div class="row">
                   <button class="secondary" (click)="scenarioConfirm = ''">Volver</button
@@ -229,6 +279,13 @@
     ><span>Diseñado para soñar en grande<span class="orange"> ✦</span></span>
   </footer>
   @if (presentation()) {
+    <div class="presentation-roles view-switch">
+      <button [class.active]="store.role() === 'child'" (click)="switchRole('child')">
+        Vista del hijo</button
+      ><button [class.active]="store.role() === 'parent'" (click)="switchRole('parent')">
+        Vista del adulto
+      </button>
+    </div>
     <button class="presentation-exit quiet-button" (click)="togglePresentation()">
       <app-icon name="expand" />Salir de presentación
     </button>

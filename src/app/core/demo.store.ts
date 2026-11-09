@@ -1,5 +1,30 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { Activity, DemoState, Goal, STORAGE_KEY, isGoalCompleted, roundMoney } from './models';
+import {
+  Activity,
+  DemoState,
+  Goal,
+  STORAGE_KEY,
+  FAMILY_STORAGE_KEY,
+  ChildAccount,
+  FamilyState,
+  Role,
+  Agreement,
+  AgreementTask,
+  isGoalCompleted,
+  roundMoney,
+} from './models';
+import { familySeed } from './family-seed';
+import {
+  addDays,
+  agreementMetrics,
+  agreementOpen,
+  dayDifference,
+  localToday,
+  validDate,
+  observeDelays,
+  dateLabel,
+} from './agreement-rules';
+import { executeLoanCommand, LoanCommand } from './loan-engine';
 
 export function initialState(): DemoState {
   return {
@@ -67,7 +92,33 @@ function validState(s: DemoState): boolean {
 export class DemoStore {
   readonly scenarioVersion = signal(0);
   readonly persistenceWarning = signal('');
-  readonly state = signal<DemoState>(this.restore());
+  readonly role = signal<Role>('child');
+  readonly previewChildId = signal('alex');
+  readonly parentChildId = signal('alex');
+  readonly family = signal<FamilyState>(this.restoreFamily());
+  readonly state = computed(() => this.child(this.previewChildId())!);
+  readonly demoChildId = computed(() =>
+    this.role() === 'parent' ? this.parentChildId() : this.previewChildId()
+  );
+  readonly demoChild = computed(() => this.child(this.demoChildId())!);
+  readonly demoAgeBand = computed(() =>
+    this.demoChild().profile.age <= 12
+      ? 'junior'
+      : this.demoChild().profile.age <= 15
+        ? 'explorer'
+        : 'teen'
+  );
+  readonly demoBandLabel = computed(
+    () =>
+      ({
+        junior: 'Descubre · 10–12 años',
+        explorer: 'Construye · 13–15 años',
+        teen: 'Proyecta · 16–17 años',
+      })[this.demoAgeBand()]
+  );
+  readonly childAgreements = computed(() =>
+    this.family().agreements.filter((a) => a.childId === this.previewChildId())
+  );
   readonly saved = computed(() =>
     this.state().goals.reduce((sum, g) => roundMoney(sum + g.saved), 0)
   );
@@ -90,6 +141,178 @@ export class DemoStore {
   readonly pending = computed(() => this.state().requests.filter((r) => r.status === 'pending'));
   readonly activeGoals = computed(() => this.state().goals.filter((g) => !isGoalCompleted(g)));
   readonly completedGoals = computed(() => this.state().goals.filter(isGoalCompleted));
+
+  child(id: string): ChildAccount | undefined {
+    return this.family().children.find((c) => c.id === id);
+  }
+  setRole(role: Role): void {
+    if (role === 'parent') this.parentChildId.set(this.previewChildId());
+    else this.previewChildId.set(this.parentChildId());
+    this.role.set(role);
+  }
+  selectDemoChild(id: string): void {
+    if (!this.child(id)) return;
+    if (this.role() === 'parent') this.parentChildId.set(id);
+    else this.previewChildId.set(id);
+  }
+  focusChild(id: string): void {
+    if (this.role() === 'parent' && this.child(id)) this.parentChildId.set(id);
+  }
+  private permitted(role: Role, childId: string): boolean {
+    return (
+      this.role() === role &&
+      !!this.child(childId) &&
+      (role === 'parent' || this.previewChildId() === childId)
+    );
+  }
+  private restoreFamily(): FamilyState {
+    try {
+      const raw = localStorage.getItem(FAMILY_STORAGE_KEY);
+      if (raw) {
+        const f = JSON.parse(raw) as FamilyState;
+        if (
+          f.version === 6 &&
+          f.parent?.id &&
+          Number.isFinite(f.parent.balance) &&
+          f.parent.balance >= 0 &&
+          validDate(f.today) &&
+          Array.isArray(f.children) &&
+          f.children.length &&
+          new Set(f.children.map((c) => c.id)).size === f.children.length &&
+          f.children.every((c) => c.id && validState(c)) &&
+          Array.isArray(f.agreements) &&
+          f.agreements.every(
+            (a) =>
+              f.children.some((c) => c.id === a.childId) &&
+              a.parentId === f.parent.id &&
+              Number.isFinite(a.amount) &&
+              a.amount > 0 &&
+              Array.isArray(a.tasks) &&
+              Array.isArray(a.events)
+          )
+        ) {
+          f.children.forEach((c) => this.preserveAchievements(c, true));
+          return f;
+        }
+        this.persistenceWarning.set(
+          'No pudimos recuperar la familia. Cargamos una demostración nueva.'
+        );
+      }
+    } catch {
+      this.persistenceWarning.set(
+        'No se pudo recuperar la familia guardada. Puedes seguir con datos de ejemplo.'
+      );
+    }
+    return familySeed(this.restore());
+  }
+  private persist(f: FamilyState): void {
+    observeDelays(f);
+    f.children.forEach((c) => this.preserveAchievements(c));
+    this.family.set(f);
+    try {
+      localStorage.setItem(FAMILY_STORAGE_KEY, JSON.stringify(f));
+    } catch {
+      this.persistenceWarning.set('Esta sesión no se podrá guardar en el navegador.');
+    }
+  }
+  configureProfile(childId: string, value: Partial<DemoState['profile']>): void {
+    if (!this.child(childId)) return;
+    this.mutate((s) => {
+      s.profile = {
+        ...s.profile,
+        ...value,
+        name: (value.name ?? s.profile.name).slice(0, 24) || 'Alex',
+        age: Math.max(10, Math.min(17, Number(value.age ?? s.profile.age))),
+      };
+    }, childId);
+  }
+  setDemoDate(date: string): string {
+    if (!validDate(date)) return 'Elige una fecha válida.';
+    const latest = this.family()
+      .agreements.flatMap((a) => [a.createdAt, ...a.events.map((e) => e.at)])
+      .sort()
+      .at(-1);
+    if (latest && date < latest)
+      return 'La fecha no puede retroceder antes de un evento. Restablece un escenario para empezar otra vez.';
+    const f = structuredClone(this.family());
+    f.today = date;
+    this.persist(f);
+    return '';
+  }
+  addChild(name: string, age: number, budget: number): string {
+    if (this.role() !== 'parent') return 'Esta acción corresponde a la vista adulta.';
+    if (
+      !name.trim() ||
+      name.trim().length > 24 ||
+      !Number.isInteger(age) ||
+      age < 10 ||
+      age > 17 ||
+      !Number.isFinite(budget) ||
+      budget < 0
+    )
+      return 'Revisa nombre, edad y aporte semanal.';
+    if (this.family().children.length >= 6) return 'Esta demo admite hasta seis perfiles.';
+    const base = initialState();
+    base.profile = {
+      ...base.profile,
+      name: name.trim(),
+      age,
+      avatar: name.trim()[0].toUpperCase(),
+    };
+    base.goals = [];
+    base.balance = 0;
+    base.history = [];
+    const f = structuredClone(this.family());
+    f.children.push({ ...base, id: crypto.randomUUID(), weeklySavingsBudget: roundMoney(budget) });
+    this.persist(f);
+    return '';
+  }
+  setWeeklyBudget(childId: string, value: number): void {
+    if (!this.permitted('parent', childId) || !Number.isFinite(value) || value < 0 || value > 10000)
+      return;
+    this.mutate((s) => {
+      s.weeklySavingsBudget = roundMoney(value);
+    }, childId);
+  }
+  metrics(childId: string) {
+    return this.permitted('parent', childId)
+      ? agreementMetrics(
+          this.family().agreements.filter((a) => a.childId === childId),
+          this.family().today
+        )
+      : null;
+  }
+  loanCommand(childId: string, command: LoanCommand): string {
+    const f = structuredClone(this.family());
+    observeDelays(f);
+    const error = executeLoanCommand(f, this.role(), this.previewChildId(), childId, command);
+    if (!error) this.persist(f);
+    return error;
+  }
+  setFamilyFunds(value: number): void {
+    if (!Number.isFinite(value) || value < 0 || value > 100000) return;
+    const f = structuredClone(this.family());
+    f.parent.balance = roundMoney(value);
+    this.persist(f);
+  }
+  plan(childId: string) {
+    const c = this.child(childId)!;
+    const active = c.goals.filter((g) => !isGoalCompleted(g));
+    const needed = roundMoney(active.reduce((n, g) => n + (g.target - g.saved) / g.weeks, 0));
+    return {
+      needed,
+      capacity: c.weeklySavingsBudget,
+      count: active.length,
+      exceeds: needed > c.weeklySavingsBudget,
+      message: !active.length
+        ? 'Es un buen momento para elegir su próximo sueño.'
+        : !c.weeklySavingsBudget
+          ? 'Aún no hay un aporte semanal acordado. Conversen antes de fijar plazos.'
+          : needed > c.weeklySavingsBudget
+            ? `Sus ${active.length} metas necesitan aproximadamente S/ ${needed.toFixed(2)} por semana; acordaron S/ ${c.weeklySavingsBudget.toFixed(2)}. Prioricen una meta o amplíen los plazos.`
+            : 'El plan cabe en el aporte semanal acordado. Revisen juntos si sigue siendo cómodo.',
+    };
+  }
 
   private preserveAchievements(s: DemoState, recoverLegacyHistory = false): DemoState {
     // Migrar sesiones anteriores y guardar los hitos aparte de los fondos actuales.
@@ -175,25 +398,26 @@ export class DemoStore {
     return this.preserveAchievements(initialState());
   }
 
-  private commit(s: DemoState): void {
-    this.preserveAchievements(s);
-    this.state.set(s);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
-    } catch {
-      this.persistenceWarning.set('Esta sesión no se podrá guardar en el navegador.');
-    }
+  private commit(s: ChildAccount, childId = this.previewChildId()): void {
+    const f = structuredClone(this.family());
+    const index = f.children.findIndex((c) => c.id === childId);
+    if (index < 0) return;
+    f.children[index] = this.preserveAchievements(s) as ChildAccount;
+    this.persist(f);
   }
-  private mutate(fn: (s: DemoState) => void): void {
-    const s = this.preserveAchievements(structuredClone(this.state()));
+  private mutate(fn: (s: ChildAccount) => void, childId = this.previewChildId()): void {
+    const original = this.child(childId);
+    if (!original) return;
+    const s = this.preserveAchievements(structuredClone(original)) as ChildAccount;
     fn(s);
-    this.commit(s);
+    this.commit(s, childId);
   }
   private log(s: DemoState, text: string, amount: number, kind: Activity['kind']): void {
-    s.history.unshift({ id: Date.now(), text, amount, kind, date: 'Hoy' });
+    s.history.unshift({ id: Date.now(), text, amount, kind, date: dateLabel(this.family().today) });
     s.history = s.history.slice(0, 30);
   }
   profile(value: Partial<DemoState['profile']>): void {
+    if (this.role() !== 'child') return;
     this.mutate((s) => {
       s.profile = {
         ...s.profile,
@@ -203,13 +427,13 @@ export class DemoStore {
       };
     });
   }
-  setBalance(n: number): void {
+  setBalance(n: number, childId = this.demoChildId()): void {
     if (Number.isFinite(n) && n >= 0 && n <= 100000)
       this.mutate((s) => {
         s.balance = roundMoney(n);
-      });
+      }, childId);
   }
-  setSaved(id: number, n: number): void {
+  setSaved(id: number, n: number, childId = this.demoChildId()): void {
     if (!Number.isFinite(n)) return;
     this.mutate((s) => {
       const g = s.goals.find((g) => g.id === id);
@@ -217,9 +441,11 @@ export class DemoStore {
         g.saved = roundMoney(Math.max(0, Math.min(g.target, n)));
         s.requests = s.requests.filter((r) => r.goalId !== id || r.status !== 'pending');
       }
-    });
+    }, childId);
   }
   saveGoal(value: Omit<Goal, 'id' | 'saved'>, id?: number): string {
+    if (this.role() !== 'child')
+      return 'Las metas las crea su protagonista desde la vista adolescente.';
     if (
       !value.name.trim() ||
       !Number.isFinite(value.target) ||
@@ -255,11 +481,22 @@ export class DemoStore {
     return '';
   }
   deposit(id: number, amount: number, family = false): string {
-    const g = this.state().goals.find((g) => g.id === id);
+    return this.depositFor(
+      family ? this.parentChildId() : this.previewChildId(),
+      id,
+      amount,
+      family
+    );
+  }
+  depositFor(childId: string, id: number, amount: number, family = true): string {
+    if (!this.permitted(family ? 'parent' : 'child', childId))
+      return 'No puedes hacer esta operación desde esta vista.';
+    const child = this.child(childId)!;
+    const g = child.goals.find((g) => g.id === id);
     if (!g || !Number.isFinite(amount) || amount <= 0 || roundMoney(amount) !== amount)
       return 'Escribe un monto válido con hasta dos decimales.';
     if (isGoalCompleted(g)) return 'Este sueño ya está cumplido. Puedes empezar una nueva meta.';
-    if (!family && amount > this.state().balance)
+    if (!family && amount > child.balance)
       return 'Tu saldo disponible no alcanza para este aporte.';
     if (amount > roundMoney(g.target - g.saved))
       return 'El aporte supera lo que falta para alcanzar la meta.';
@@ -274,10 +511,11 @@ export class DemoStore {
         family ? 'family' : 'deposit'
       );
       if (goal.saved >= goal.target) this.log(s, '¡Meta alcanzada! ' + goal.name, 0, 'achievement');
-    });
+    }, childId);
     return '';
   }
   withdraw(id: number, amount: number, reason: string): string {
+    if (this.role() !== 'child') return 'El retiro debe solicitarlo el adolescente.';
     const g = this.state().goals.find((g) => g.id === id);
     if (
       !g ||
@@ -310,9 +548,14 @@ export class DemoStore {
     return '';
   }
   resolve(id: number, approve: boolean): string {
-    const r = this.pending().find((r) => r.id === id);
+    return this.resolveFor(this.parentChildId(), id, approve);
+  }
+  resolveFor(childId: string, id: number, approve: boolean): string {
+    if (!this.permitted('parent', childId)) return 'Solo la vista adulta puede autorizar retiros.';
+    const child = this.child(childId)!;
+    const r = child.requests.find((r) => r.id === id && r.status === 'pending');
     if (!r) return 'Esta solicitud ya fue resuelta.';
-    const g = this.state().goals.find((g) => g.id === r.goalId);
+    const g = child.goals.find((g) => g.id === r.goalId);
     if (approve && (!g || r.amount > g.saved))
       return 'El ahorro disponible cambió. Revisa la meta.';
     this.mutate((s) => {
@@ -329,10 +572,13 @@ export class DemoStore {
         approve ? -r.amount : 0,
         'withdraw'
       );
-    });
+    }, childId);
     return '';
   }
-  cancelGoal(id: number): void {
+  cancelGoal(id: number): string {
+    if (this.role() !== 'child') return 'Esta acción corresponde al adolescente.';
+    if (this.childAgreements().some((a) => a.goalId === id && agreementOpen(a)))
+      return 'Esta meta tiene un préstamo o una solicitud abierta. Resuelve ese recorrido antes de cerrarla.';
     this.mutate((s) => {
       const g = s.goals.find((g) => g.id === id);
       if (!g || g.saved > 0 || isGoalCompleted(g)) return;
@@ -340,8 +586,10 @@ export class DemoStore {
       s.requests = s.requests.filter((r) => r.goalId !== id);
       this.log(s, 'Cerraste la meta ' + g.name, 0, 'achievement');
     });
+    return '';
   }
   completeLesson(id: string): void {
+    if (this.role() !== 'child') return;
     this.mutate((s) => {
       if (!s.lessons.includes(id)) {
         s.lessons.push(id);
@@ -350,14 +598,37 @@ export class DemoStore {
     });
   }
   praise(): void {
+    this.praiseFor(this.parentChildId());
+  }
+  praiseFor(childId: string): void {
+    if (!this.permitted('parent', childId)) return;
     this.mutate((s) => {
       s.praise = 'Me encanta verte planificar tus sueños. ¡Estoy contigo en cada paso!';
       this.log(s, 'Tu familia te envió un mensaje de ánimo', 0, 'family');
-    });
+    }, childId);
   }
   scenario(key: string): void {
-    const s = initialState();
-    s.profile = { ...this.state().profile };
+    const current = this.family();
+    const f = familySeed(initialState());
+    for (const child of current.children) {
+      const seeded = f.children.find((c) => c.id === child.id);
+      if (seeded) seeded.profile = { ...child.profile };
+      else {
+        const base = initialState();
+        f.children.push({
+          ...base,
+          id: child.id,
+          profile: { ...child.profile },
+          balance: 0,
+          goals: [],
+          history: [],
+          weeklySavingsBudget: child.weeklySavingsBudget,
+        });
+      }
+    }
+    const s = f.children.find((c) => c.id === this.demoChildId())!;
+    if ((key === 'withdraw' || key === 'achieved') && !s.goals.length)
+      s.goals = structuredClone(initialState().goals);
     if (key === 'start') {
       s.goals = [];
       s.history = [];
@@ -367,16 +638,16 @@ export class DemoStore {
       s.requests = [
         {
           id: Date.now(),
-          goalId: 1,
+          goalId: s.goals[0].id,
           goalName: s.goals[0].name,
-          amount: 30,
+          amount: Math.min(30, s.goals[0].saved),
           reason: 'Necesito comprar materiales para mi proyecto del colegio.',
           status: 'pending',
         },
       ];
     }
     if (key === 'achieved') {
-      s.goals[0].saved = 600;
+      s.goals[0].saved = s.goals[0].target;
       s.history.unshift({
         id: 4,
         text: '¡Alcanzaste tu primera meta!',
@@ -385,7 +656,8 @@ export class DemoStore {
         date: 'Hoy',
       });
     }
-    this.commit(s);
+    if (key !== 'default') f.agreements = f.agreements.filter((a) => a.childId !== s.id);
+    this.persist(f);
     this.scenarioVersion.update((n) => n + 1);
   }
 }

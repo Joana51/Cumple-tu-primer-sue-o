@@ -1,4 +1,5 @@
 @import './fonts.css';
+@import './family.css';
 
 :root {
   font-family: 'DM Sans', sans-serif;

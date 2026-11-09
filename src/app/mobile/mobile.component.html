@@ -1,31 +1,5 @@
 <div class="mobile-app" [attr.data-age]="store.ageBand()" [class.home-screen]="page() === 'inicio'">
-  <div class="phone-status" aria-hidden="true">
-    <b>9:41</b>
-    <div class="dynamic-island"></div>
-    <div class="status-icons">
-      <svg viewBox="0 0 18 14">
-        <path d="M2 12v-2m4 2V7m4 5V4m4 8V1" stroke="currentColor" stroke-width="2.4" /></svg
-      ><svg viewBox="0 0 18 14">
-        <path
-          d="M1 4q8-7 16 0M4 7q5-4 10 0m-7 3q2-2 4 0"
-          stroke="currentColor"
-          stroke-width="2"
-          fill="none"
-        />
-        <circle cx="9" cy="12" r="1" /></svg
-      ><svg viewBox="0 0 25 14">
-        <rect x="1" y="2" width="20" height="10" rx="3" stroke="currentColor" fill="none" />
-        <rect x="3" y="4" width="16" height="6" rx="1" />
-        <path d="M23 5v4" stroke="currentColor" stroke-width="2" />
-      </svg>
-    </div>
-  </div>
-  <aside class="independence-notice" aria-label="Aviso de independencia del prototipo">
-    <app-icon name="info" />
-    <div>
-      <strong>Mi primer sueño · Demo independiente</strong>
-    </div>
-  </aside>
+  <app-phone-status /><app-demo-notice />
   <div class="phone-content" [inert]="modal() ? true : null">
     <header class="mobile-header">
       <button class="profile-button" (click)="go('perfil')" aria-label="Abrir mi perfil">
@@ -39,7 +13,7 @@
       </button>
       <div>
         <span class="greeting">{{
-          page() === 'familia' ? 'VISTA FAMILIAR · DEMO' : 'QUÉ BUENO VERTE'
+          page() === 'familia' ? 'TU RED DE APOYO' : 'QUÉ BUENO VERTE'
         }}</span>
         <h2>{{ page() === 'inicio' ? '¡Hola, ' + state.profile.name + '!' : pageTitle }}</h2>
       </div>
@@ -79,7 +53,13 @@
                 ><app-icon name="shield" /><span
                   >En tus sueños <b>{{ showBalance ? money(store.saved()) : 'S/ ••••' }}</b></span
                 ></span
-              ><span class="balance-demo">DEMO</span>
+              ><button
+                class="balance-protected-link"
+                (click)="go('protegido')"
+                aria-label="Ver mi ahorro protegido"
+              >
+                <app-icon name="shield" />Protegido<app-icon name="chevron" />
+              </button>
             </div>
             <div class="balance-decoration" aria-hidden="true"></div>
           </section>
@@ -374,94 +354,73 @@
         @case ('familia') {
           <div class="family-hero">
             <div class="family-heart"><app-icon name="heart" /></div>
-            <span class="eyebrow">JUNTOS PARA CRECER</span>
-            <h1>Acompañar.<br />Confiar. Celebrar.</h1>
-            <p>Su sueño es suyo. Tu apoyo hace la diferencia.</p>
+            <span class="eyebrow">CONFIANZA QUE ACOMPAÑA</span>
+            <h1>Tus sueños.<br />Su compañía.</h1>
+            <p>Tu familia está para escucharte, celebrar y ayudarte a planear.</p>
           </div>
           <div class="family-profile">
-            <span class="avatar">{{ state.profile.name.charAt(0) }}</span>
+            <span class="avatar">{{ store.family().parent.name[0] }}</span>
             <div>
-              <strong>El camino de {{ state.profile.name }}</strong
-              ><small
-                >{{ state.profile.age }} años · {{ store.activeGoals().length }} metas en camino ·
-                {{ store.completedGoals().length }} cumplidas</small
-              >
+              <strong>{{ store.family().parent.name }}</strong
+              ><small>Tu acompañante en esta aventura</small>
             </div>
             <span class="tiny-pill green">EN FAMILIA</span>
           </div>
-          <div class="family-summary">
-            <span
-              >Ahorro en sus metas<strong>{{ money(store.saved()) }}</strong></span
-            ><button class="text-button" (click)="open('summary')">
-              Ver resumen<app-icon name="chevron" />
-            </button>
-          </div>
-          <div class="family-actions">
-            <button
-              class="secondary"
-              (click)="store.praise(); notify('Mensaje enviado. Puedes verlo en Inicio.')"
-            >
-              <app-icon name="heart" />Enviar ánimo</button
-            ><button
-              class="primary"
-              (click)="open('family-deposit')"
-              [disabled]="!state.goals.some(incomplete)"
-            >
-              <app-icon name="plus" />Aportar
-            </button>
-          </div>
-          <div class="section-heading">
-            <h2>Decisiones en familia</h2>
-            <span class="tiny-pill">{{ store.pending().length }} PENDIENTES</span>
-          </div>
-          @for (r of store.pending(); track r.id) {
-            <article class="request-card">
-              <span class="pill"><app-icon name="clock" />Solicitud de retiro</span>
-              <h3>
-                {{ money(r.amount) }} <span>de {{ r.goalName }}</span>
-              </h3>
-              <p class="request-reason">“{{ r.reason }}”</p>
-              <p>
-                El ahorro se mantiene reservado hasta que autorices. Conversen sobre cómo ajustar el
-                plan.
-              </p>
-              <div class="row">
-                <button class="secondary" (click)="resolve(r.id, false)">Conversar primero</button
-                ><button class="primary" (click)="resolve(r.id, true)">Autorizar retiro</button>
-              </div>
-            </article>
+          <button class="family-loan-link" (click)="go('acuerdos')">
+            <span class="feature-icon"><app-icon name="wallet" /></span>
+            <div>
+              <strong>Mis préstamos familiares</strong>
+              <p>Solicita un anticipo y revisa tus entregas en su propio espacio.</p>
+            </div>
+            <app-icon name="chevron" />
+          </button>
+          @if (state.praise) {
+            <div class="praise-note">
+              <app-icon name="heart" />
+              <p>{{ state.praise }}</p>
+            </div>
+          }
+          <div class="section-heading"><h2>Tus solicitudes de retiro</h2></div>
+          @for (r of state.requests; track r.id) {
+            <div class="child-withdrawal">
+              <span class="pill" [class.green]="r.status === 'approved'"
+                ><app-icon name="clock" />{{
+                  r.status === 'pending'
+                    ? 'Esperando respuesta'
+                    : r.status === 'approved'
+                      ? 'Autorizada'
+                      : 'Para conversar'
+                }}</span
+              >
+              <h3>{{ money(r.amount) }} · {{ r.goalName }}</h3>
+              <p>{{ r.reason }}</p>
+              <small>{{
+                r.status === 'pending'
+                  ? 'El dinero sigue reservado mientras tu familia lo revisa.'
+                  : r.status === 'approved'
+                    ? 'El retiro fue devuelto a tu saldo disponible.'
+                    : 'Tu ahorro se mantiene reservado. Pueden conversar y volver a intentarlo.'
+              }}</small>
+            </div>
           } @empty {
             <div class="no-requests">
-              <span><app-icon name="check" /></span>
+              <app-icon name="check" />
               <div>
-                <strong>Todo en orden por aquí</strong>
-                <p>No hay solicitudes de retiro pendientes.</p>
+                <strong>No tienes solicitudes pendientes.</strong>
+                <p>Puedes pedir un retiro desde el detalle de una meta.</p>
               </div>
             </div>
           }
-          <div class="section-heading"><h2>Pequeños pasos, grandes avances</h2></div>
-          <div class="activity-list">
-            @for (h of state.history.slice(0, 5); track $index) {
-              <div class="activity-row">
-                <span class="activity-icon"
-                  ><app-icon
-                    [name]="
-                      h.kind === 'family' ? 'heart' : h.kind === 'achievement' ? 'trophy' : 'shield'
-                    "
-                /></span>
-                <div>
-                  <strong>{{ h.text }}</strong
-                  ><small>{{ h.date }}</small>
-                </div>
-              </div>
-            } @empty {
-              <p class="muted">Aquí celebrarás sus primeros pasos.</p>
-            }
-          </div>
           <div class="info-card">
-            <app-icon name="info" />
-            <p>Acompañamos hábitos y decisiones, sin calificar a nadie por cuánto ahorra.</p>
+            <app-icon name="heart" />
+            <p>
+              Tu familia puede conocer tus metas y aportes para acompañarte. Las decisiones adultas
+              se revisan desde su propia vista.
+            </p>
           </div>
+        }
+        @case ('acuerdos') {
+          <app-loans [childId]="store.previewChildId()" />
         }
 
         @case ('perfil') {
@@ -969,14 +928,7 @@
                   }}
                 </button>
               } @else {
-                <button
-                  class="primary full"
-                  (click)="
-                    store.cancelGoal(g.id);
-                    close();
-                    notify('Meta cerrada. Puedes elegir un nuevo sueño.')
-                  "
-                >
+                <button class="primary full" (click)="cancelSelectedGoal()">
                   Cerrar esta meta
                 </button>
               }

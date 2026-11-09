@@ -1,19 +1,38 @@
 import { Component, HostListener, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DemoStore } from './core/demo.store';
-import { Page, money } from './core/models';
+import { Page, ParentPage, Role, money } from './core/models';
+import { addDays } from './core/agreement-rules';
 import { IconComponent } from './shared/icon.component';
 import { MobileComponent } from './mobile/mobile.component';
+import { ParentComponent } from './parent/parent.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [FormsModule, IconComponent, MobileComponent],
+  imports: [FormsModule, IconComponent, MobileComponent, ParentComponent],
   templateUrl: './app.component.html',
 })
 export class AppComponent {
   store = inject(DemoStore);
   page = signal<Page>('inicio');
+  parentPage = signal<ParentPage>('home');
+  panelMessage = signal('');
+  switchRole(role: Role) {
+    this.store.setRole(role);
+    this.page.set('inicio');
+    this.parentPage.set('home');
+  }
+  showFeature(page: Page) {
+    if (this.store.role() === 'child') this.page.set(page);
+    else this.parentPage.set(page === 'familia' ? 'children' : 'detail');
+  }
+  advanceDate(days: number) {
+    this.panelMessage.set(this.store.setDemoDate(addDays(this.store.family().today, days)));
+  }
+  changeDate(date: string) {
+    this.panelMessage.set(this.store.setDemoDate(date));
+  }
   presentation = signal(false);
   panelOpen = signal(false);
   panelTab = signal<'profile' | 'scenarios'>('profile');
@@ -66,7 +85,7 @@ export class AppComponent {
     const n = Number(value);
     if (kind === 'balance') this.store.setBalance(n);
     else {
-      const g = this.store.state().goals[0];
+      const g = this.store.demoChild().goals[0];
       if (g) this.store.setSaved(g.id, n);
     }
   }

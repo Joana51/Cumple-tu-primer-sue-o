@@ -17,6 +17,9 @@ import { Lesson, getLessons } from '../core/lessons';
 import { IconComponent } from '../shared/icon.component';
 import { GoalCardComponent } from '../shared/goal-card.component';
 import { DreamArtComponent } from '../shared/dream-art.component';
+import { PhoneStatusComponent } from '../shared/phone-status.component';
+import { DemoNoticeComponent } from '../shared/demo-notice.component';
+import { LoansComponent } from '../loans/loans.component';
 
 type Modal =
   | ''
@@ -32,7 +35,16 @@ type Modal =
 @Component({
   selector: 'app-mobile',
   standalone: true,
-  imports: [FormsModule, NgTemplateOutlet, IconComponent, GoalCardComponent, DreamArtComponent],
+  imports: [
+    FormsModule,
+    NgTemplateOutlet,
+    IconComponent,
+    GoalCardComponent,
+    DreamArtComponent,
+    PhoneStatusComponent,
+    DemoNoticeComponent,
+    LoansComponent,
+  ],
   templateUrl: './mobile.component.html',
 })
 export class MobileComponent {
@@ -72,7 +84,7 @@ export class MobileComponent {
   nav: { page: Page; icon: string; label: string }[] = [
     { page: 'inicio', icon: 'home', label: 'Inicio' },
     { page: 'suenos', icon: 'star', label: 'Sueños' },
-    { page: 'protegido', icon: 'shield', label: 'Protegido' },
+    { page: 'acuerdos', icon: 'wallet', label: 'Préstamos' },
     { page: 'aprende', icon: 'book', label: 'Aprende' },
     { page: 'familia', icon: 'heart', label: 'Familia' },
   ];
@@ -86,6 +98,7 @@ export class MobileComponent {
   constructor() {
     effect(() => {
       this.page();
+      this.store.previewChildId();
       untracked(() => {
         this.modal.set('');
         this.scroll()?.nativeElement.scrollTo({ top: 0 });
@@ -121,6 +134,7 @@ export class MobileComponent {
       aprende: 'Aprende a tu ritmo',
       familia: 'Mi familia',
       perfil: 'Mi perfil',
+      acuerdos: 'Mis préstamos familiares',
     }[this.page()];
   }
   get modalTitle() {
@@ -305,6 +319,14 @@ export class MobileComponent {
       avatar: this.profileAvatar,
     });
     this.notify('Tu perfil se actualizó.');
+  }
+  cancelSelectedGoal(): void {
+    if (!this.selected) return;
+    this.error = this.store.cancelGoal(this.selected.id);
+    if (!this.error) {
+      this.close();
+      this.notify('Meta cerrada. Puedes elegir un nuevo sueño.');
+    }
   }
   keydown(event: KeyboardEvent): void {
     if (event.key === 'Escape') {

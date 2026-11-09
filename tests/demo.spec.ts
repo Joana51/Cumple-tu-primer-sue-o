@@ -1,12 +1,21 @@
 import { test, expect, Page } from '@playwright/test';
 
-const key = 'primer-sueno-angular-v5';
-const state = (page: Page) => page.evaluate((k) => JSON.parse(localStorage.getItem(k)!), key);
-const nav = (page: Page, label: string) =>
-  page
+const key = 'primer-sueno-familia-v6';
+const state = (page: Page) =>
+  page.evaluate((k) => JSON.parse(localStorage.getItem(k)!).children[0], key);
+const adult = (page: Page) =>
+  page.getByRole('button', { name: 'Vista del adulto', exact: true }).click();
+const nav = async (page: Page, label: string) => {
+  if (label === 'Protegido') {
+    await nav(page, 'Inicio');
+    await page.getByRole('button', { name: 'Ver mi ahorro protegido' }).click();
+    return;
+  }
+  await page
     .getByRole('navigation', { name: 'Navegación principal' })
     .getByRole('button', { name: label, exact: true })
     .click();
+};
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
 });
@@ -30,6 +39,8 @@ test('aportar, proteger el saldo, solicitar y autorizar un retiro; persiste al r
   expect(s.goals[0].saved).toBe(205.5);
   expect(s.requests[0].status).toBe('pending');
   await nav(page, 'Familia');
+  await expect(page.getByRole('button', { name: 'Autorizar retiro', exact: true })).toHaveCount(0);
+  await adult(page);
   await page.getByRole('button', { name: 'Autorizar retiro', exact: true }).click();
   s = await state(page);
   expect(s.balance).toBe(169.5);
@@ -62,11 +73,12 @@ test('crear y modificar una meta, rechazar el exceso de saldo y aportar desde fa
   await expect(page.getByRole('dialog')).toBeVisible();
   expect((await state(page)).balance).toBe(165);
   await page.keyboard.press('Escape');
-  await nav(page, 'Familia');
-  await page.getByRole('button', { name: 'Aportar', exact: true }).click();
-  await page.getByLabel('Elige qué sueño acompañar').selectOption({ label: 'Mi bicicleta' });
-  await page.getByLabel('¿Cuánto quieres aportar? (S/)').fill('10');
-  await page.getByRole('button', { name: 'Confirmar aporte familiar' }).click();
+  await adult(page);
+  await page.locator('.parent-child-card').filter({ hasText: 'Alex' }).click();
+  await page.getByRole('button', { name: 'Aportar a una meta', exact: true }).click();
+  await page.getByLabel('Meta de Alex').selectOption({ label: 'Mi bicicleta' });
+  await page.getByLabel('Aporte voluntario (S/)').fill('10');
+  await page.getByRole('button', { name: 'Confirmar aporte a Alex' }).click();
   expect((await state(page)).goals[1].saved).toBe(10);
   expect((await state(page)).balance).toBe(165);
 });
@@ -199,6 +211,7 @@ test('editar no evade la protección y conversar primero mantiene intactos los f
   await page.getByLabel('¿Para qué necesitas este dinero?').fill('Cambiar mis planes');
   await page.getByRole('button', { name: 'Enviar solicitud a mi familia' }).click();
   await nav(page, 'Familia');
+  await adult(page);
   await page.getByRole('button', { name: 'Conversar primero' }).click();
   const s = await state(page);
   expect(s.balance).toBe(165);
@@ -288,11 +301,9 @@ test('la meta y sus insignias permanecen cumplidas tras usar todo el ahorro y re
   await expect(page.locator('.badge-card').filter({ hasText: 'Un paso de ahorro' })).toHaveClass(
     /earned/
   );
-  await nav(page, 'Familia');
-  await page.getByRole('button', { name: 'Ver resumen', exact: true }).click();
-  await expect(
-    page.locator('.summary-grid > div').filter({ hasText: 'Metas alcanzadas' })
-  ).toContainText('1');
+  await adult(page);
+  await page.locator('.parent-child-card').filter({ hasText: 'Alex' }).click();
+  await expect(page.locator('.parent-goal').filter({ hasText: 'CUMPLIDA' })).toHaveCount(1);
 });
 
 test('una sesión previa sin hitos se migra y conserva su meta cumplida al retirar', async ({
@@ -301,9 +312,9 @@ test('una sesión previa sin hitos se migra y conserva su meta cumplida al retir
   await page.getByLabel('Nombre', { exact: true }).fill('Mara');
   await page.evaluate((k) => {
     const saved = JSON.parse(localStorage.getItem(k)!);
-    saved.goals[0].saved = saved.goals[0].target;
-    delete saved.goals[0].completedAt;
-    delete saved.earnedBadges;
+    saved.children[0].goals[0].saved = saved.children[0].goals[0].target;
+    delete saved.children[0].goals[0].completedAt;
+    delete saved.children[0].earnedBadges;
     localStorage.setItem(k, JSON.stringify(saved));
   }, key);
   await page.reload();

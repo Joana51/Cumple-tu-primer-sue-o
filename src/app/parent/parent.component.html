@@ -1,0 +1,482 @@
+<div class="mobile-app parent-app" data-age="teen">
+  <app-phone-status /><app-demo-notice />
+  <div class="phone-content" [inert]="sheet() ? true : null">
+    <header class="mobile-header">
+      <span class="avatar parent-avatar">{{ store.family().parent.name[0] }}</span>
+      <div>
+        <span class="greeting">VISTA ADULTA · {{ store.family().parent.name.toUpperCase() }}</span>
+        <h2>{{ title }}</h2>
+      </div>
+      @if (page() === 'detail') {
+        <button class="icon-button" aria-label="Volver a mis hijos" (click)="go('children')">
+          <app-icon name="user" />
+        </button>
+      } @else {
+        <span class="parent-role-icon"><app-icon name="heart" /></span>
+      }
+    </header>
+    <main class="mobile-scroll" #scroll aria-label="Contenido de la vista adulta">
+      @if (store.persistenceWarning()) {
+        <p class="inline-warning">{{ store.persistenceWarning() }}</p>
+      }
+      @switch (page()) {
+        @case ('home') {
+          <section class="parent-hero">
+            <span class="eyebrow">ACOMPAÑAR ES ESTAR CERCA</span>
+            <h1>Sus sueños.<br />Tu compañía.</h1>
+            <p>Hola, {{ store.family().parent.name }}. Así va el camino de tu familia.</p>
+            <app-icon name="heart" />
+          </section>
+          <div class="parent-summary-grid">
+            <div>
+              <small>En sus sueños</small><strong>{{ money(totalSaved()) }}</strong>
+            </div>
+            <div>
+              <small>Fondo para anticipos</small
+              ><strong>{{ money(store.family().parent.balance) }}</strong>
+            </div>
+          </div>
+          <div class="section-heading">
+            <h2>Una mirada a cada hijo</h2>
+            <button class="text-button" (click)="go('children')">
+              Ver familia<app-icon name="chevron" />
+            </button>
+          </div>
+          @for (c of store.family().children; track c.id) {
+            <button class="parent-child-card" (click)="detail(c.id)">
+              <div class="row">
+                <span class="avatar">{{ c.profile.name[0] }}</span>
+                <div class="child-card-name">
+                  <strong>{{ c.profile.name }}</strong
+                  ><small>{{ c.profile.age }} años · {{ c.goals.length }} sueños</small>
+                </div>
+                <app-icon name="chevron" />
+              </div>
+              <div class="child-card-money">
+                <span
+                  >Disponible <b>{{ money(c.balance) }}</b></span
+                ><span
+                  >Reservado <b>{{ money(saved(c)) }}</b></span
+                >
+              </div>
+              @if (store.metrics(c.id); as m) {
+                <div class="observed-rate">
+                  <span>Acuerdos base en plazo</span
+                  ><strong>{{
+                    m.onTimeRate === null ? 'Sin historial' : m.onTimeRate + '% observado'
+                  }}</strong>
+                </div>
+                <small class="metrics-denominator"
+                  >{{ m.onTime }} de {{ m.completed }} completados · {{ m.overdue }} en mora</small
+                >
+              }
+            </button>
+          }
+          @if (pending().length) {
+            <div class="section-heading">
+              <h2>Solicitudes de retiro</h2>
+              <span class="tiny-pill">{{ pending().length }}</span>
+            </div>
+            @for (item of pending(); track item.childId + item.request.id) {
+              <article class="request-card">
+                <span class="pill">{{ item.name }} · {{ item.request.goalName }}</span>
+                <h3>{{ money(item.request.amount) }}</h3>
+                <p class="request-reason">“{{ item.request.reason }}”</p>
+                <div class="row">
+                  <button class="secondary" (click)="resolve(item.childId, item.request.id, false)">
+                    Conversar primero</button
+                  ><button class="primary" (click)="resolve(item.childId, item.request.id, true)">
+                    Autorizar retiro
+                  </button>
+                </div>
+              </article>
+            }
+          }
+          @if (loanAlerts().length) {
+            <div class="section-heading"><h2>Préstamos que necesitan atención</h2></div>
+            @for (a of loanAlerts(); track a.id) {
+              <button class="parent-alert" (click)="loans(a.childId)">
+                <app-icon name="clock" /><span
+                  ><strong>{{ store.child(a.childId)?.profile?.name }} · {{ a.title }}</strong
+                  ><small>{{
+                    a.status === 'requested'
+                      ? 'Solicitud por revisar'
+                      : a.status === 'offered'
+                        ? 'Esperando aceptación'
+                        : 'Entrega vencida: conversen el siguiente paso'
+                  }}</small></span
+                ><app-icon name="chevron" />
+              </button>
+            }
+          }
+          <div class="info-card">
+            <app-icon name="info" />
+            <p>
+              Las métricas describen acuerdos familiares de esta demo. No son un score bancario ni
+              predicen el próximo cumplimiento.
+            </p>
+          </div>
+        }
+        @case ('children') {
+          <div class="page-intro">
+            <span class="eyebrow">CADA CAMINO ES DISTINTO</span>
+            <h1>Conoce sus planes.</h1>
+            <p>Metas, dinero disponible y acuerdos. Sin comparar su valor como personas.</p>
+          </div>
+          <button class="primary full" (click)="add()">
+            <app-icon name="plus" />Añadir hijo o hija
+          </button>
+          @for (c of store.family().children; track c.id) {
+            <button class="parent-child-card" (click)="detail(c.id)">
+              <div class="row">
+                <span class="avatar">{{ c.profile.name[0] }}</span>
+                <div class="child-card-name">
+                  <strong>{{ c.profile.name }}</strong
+                  ><small>{{ c.profile.age }} años · {{ c.profile.interest }}</small>
+                </div>
+                <app-icon name="chevron" />
+              </div>
+              <div class="child-card-money">
+                <span
+                  >Disponible <b>{{ money(c.balance) }}</b></span
+                ><span
+                  >En sus metas <b>{{ money(saved(c)) }}</b></span
+                >
+              </div>
+              <p>
+                {{ store.plan(c.id).count }} metas en camino ·
+                {{ store.metrics(c.id)?.completed }} préstamos cumplidos
+              </p>
+            </button>
+          }
+        }
+        @case ('detail') {
+          <button class="text-button" (click)="go('children')">← Volver a mis hijos</button>
+          <div class="parent-profile-heading">
+            <span class="avatar large">{{ child().profile.name[0] }}</span>
+            <h1>{{ child().profile.name }}</h1>
+            <p>{{ child().profile.age }} años · {{ child().profile.interest }}</p>
+            <span class="tiny-pill">SIGUES EN LA VISTA ADULTA</span>
+          </div>
+          <div class="parent-summary-grid">
+            <div>
+              <small>Disponible para gastar</small><strong>{{ money(child().balance) }}</strong>
+            </div>
+            <div>
+              <small>Reservado en sueños</small><strong>{{ money(saved(child())) }}</strong>
+            </div>
+          </div>
+          <div class="family-actions">
+            <button class="secondary" (click)="praise()">
+              <app-icon name="heart" />Enviar ánimo</button
+            ><button
+              class="primary"
+              [disabled]="!child().goals.some(storeGoalActive)"
+              (click)="contribute()"
+            >
+              <app-icon name="plus" />Aportar a una meta
+            </button>
+          </div>
+          <div class="section-heading">
+            <h2>Todos sus sueños</h2>
+            <span class="tiny-pill">{{ child().goals.length }} METAS</span>
+          </div>
+          @for (g of child().goals; track g.id) {
+            <button class="parent-goal" (click)="goal(g)">
+              <div class="row">
+                <strong>{{ g.name }}</strong
+                ><span class="tiny-pill" [class.green]="completed(g)">{{
+                  completed(g) ? 'CUMPLIDA' : progress(g) + '%'
+                }}</span>
+              </div>
+              <p>{{ money(g.saved) }} reservados · meta {{ money(g.target) }}</p>
+              <div class="progress-track"><span [style.width.%]="progress(g)"></span></div>
+            </button>
+          } @empty {
+            <div class="info-card">
+              <app-icon name="star" />
+              <p>Aún no tiene metas. Pregúntale qué le gustaría conseguir.</p>
+            </div>
+          }
+          <section class="plan-feedback" [class.amber]="store.plan(child().id).exceeds">
+            <div class="row">
+              <h3>¿Es un plan sostenible?</h3>
+              <app-icon name="book" />
+            </div>
+            <p>{{ store.plan(child().id).message }}</p>
+            <label class="field-label" for="weekly-budget"
+              >Aporte semanal acordado para ahorrar (S/)</label
+            ><input
+              id="weekly-budget"
+              type="number"
+              min="0"
+              max="10000"
+              step="0.01"
+              [ngModel]="child().weeklySavingsBudget"
+              (change)="store.setWeeklyBudget(child().id, +$any($event.target).value)"
+            /><small
+              >Es una referencia familiar, no un ingreso garantizado ni una calificación.</small
+            >
+          </section>
+          @if (store.metrics(child().id); as m) {
+            <div class="section-heading">
+              <h2>Cumplimiento observado</h2>
+              <span class="tiny-pill">SOLO VISTA ADULTA</span>
+            </div>
+            <div class="parent-metrics">
+              <div class="metric-primary">
+                <strong>{{ m.onTimeRate === null ? '—' : m.onTimeRate + '%' }}</strong
+                ><span>de acuerdos base completados en plazo</span
+                ><small>{{ m.onTime }} de {{ m.completed }} acuerdos · plazos vigentes</small>
+              </div>
+              <div class="metrics-grid">
+                <div>
+                  <strong>{{ m.early }}</strong
+                  ><span>Adelantados</span>
+                </div>
+                <div>
+                  <strong>{{ m.late }}</strong
+                  ><span>Con retraso</span>
+                </div>
+                <div>
+                  <strong>{{ m.averageLateDays }} d</strong><span>Retraso medio si lo hubo</span>
+                </div>
+                <div>
+                  <strong>{{ m.averageEarlyDays }} d</strong><span>Adelanto medio si lo hubo</span>
+                </div>
+                <div>
+                  <strong>{{ m.overdue }}</strong
+                  ><span>Préstamos en mora</span>
+                </div>
+                <div>
+                  <strong>{{ m.everOverdue }}</strong
+                  ><span>Con mora registrada alguna vez</span>
+                </div>
+                <div>
+                  <strong>{{ m.awaitingReview }}</strong
+                  ><span>Entregas por revisar</span>
+                </div>
+              </div>
+              <p>
+                {{
+                  m.completed < 5
+                    ? 'Hay pocos acuerdos: evita sacar conclusiones sobre próximos préstamos.'
+                    : 'Estos datos describen el pasado, no garantizan el próximo resultado.'
+                }}
+                {{ m.renegotiations }} ampliaciones aceptadas. Los retrasos registrados no se borran
+                al ampliar el plazo. No es un historial crediticio.
+              </p>
+            </div>
+          }
+          <button class="primary full form-submit" (click)="go('agreements')">
+            <app-icon name="wallet" />Ver préstamos de {{ child().profile.name }}
+          </button>
+          <div class="section-heading"><h2>Movimientos y aprendizajes</h2></div>
+          <div class="activity-list">
+            @for (h of child().history.slice(0, 10); track $index) {
+              <div class="activity-row">
+                <span class="activity-icon"
+                  ><app-icon [name]="h.kind === 'family' ? 'heart' : 'shield'"
+                /></span>
+                <div>
+                  <strong>{{ h.text }}</strong
+                  ><small>{{ h.date }}</small>
+                </div>
+                @if (h.amount) {
+                  <b>{{ money(h.amount) }}</b>
+                }
+              </div>
+            } @empty {
+              <p class="muted">Sus próximos pasos aparecerán aquí.</p>
+            }
+          </div>
+          @for (r of child().requests; track r.id) {
+            @if (r.status === 'pending') {
+              <article class="request-card">
+                <span class="pill">Retiro de {{ child().profile.name }}</span>
+                <h3>{{ money(r.amount) }}</h3>
+                <p>{{ r.goalName }} · {{ r.reason }}</p>
+                <div class="row">
+                  <button class="secondary" (click)="resolve(child().id, r.id, false)">
+                    Conversar primero</button
+                  ><button class="primary" (click)="resolve(child().id, r.id, true)">
+                    Autorizar retiro
+                  </button>
+                </div>
+              </article>
+            }
+          }
+        }
+        @case ('agreements') {
+          <label class="field-label" for="parent-loan-child">Préstamos de</label
+          ><select
+            id="parent-loan-child"
+            [ngModel]="child().id"
+            (ngModelChange)="store.focusChild($event)"
+          >
+            @for (c of store.family().children; track c.id) {
+              <option [value]="c.id">{{ c.profile.name }} · {{ c.profile.age }} años</option>
+            }</select
+          ><app-loans [childId]="child().id" />
+        }
+        @case ('activity') {
+          <div class="page-intro">
+            <span class="eyebrow">EL CAMINO DE TU FAMILIA</span>
+            <h1>Cada paso cuenta.</h1>
+            <p>Los movimientos mantienen el nombre de su protagonista.</p>
+          </div>
+          <div class="activity-list">
+            @for (h of history(); track $index) {
+              <button class="activity-row parent-activity" (click)="detail(h.childId)">
+                <span class="activity-icon"
+                  ><app-icon
+                    [name]="
+                      h.kind === 'family' ? 'heart' : h.kind === 'achievement' ? 'trophy' : 'shield'
+                    "
+                /></span>
+                <div>
+                  <small>{{ h.childName }} · {{ h.date }}</small
+                  ><strong>{{ h.text }}</strong>
+                </div>
+                @if (h.amount) {
+                  <b>{{ money(h.amount) }}</b>
+                }
+              </button>
+            }
+          </div>
+        }
+      }
+      <div class="app-disclaimer">Prototipo educativo · Dinero ficticio</div>
+    </main>
+    <nav class="mobile-navigation" aria-label="Navegación adulta">
+      @for (item of nav; track item.page) {
+        <button
+          [class.active]="page() === item.page || (page() === 'detail' && item.page === 'children')"
+          [attr.aria-current]="page() === item.page ? 'page' : null"
+          (click)="go(item.page)"
+        >
+          <span class="nav-icon"><app-icon [name]="item.icon" /></span><span>{{ item.label }}</span>
+        </button>
+      }
+    </nav>
+  </div>
+  <div class="home-indicator" aria-hidden="true"><span></span></div>
+  @if (notice()) {
+    <div class="app-toast" role="status">
+      {{ notice()
+      }}<button aria-label="Cerrar mensaje" (click)="notice.set('')">
+        <app-icon name="close" />
+      </button>
+    </div>
+  }
+  @if (sheet()) {
+    <app-action-sheet
+      [title]="
+        sheet() === 'add'
+          ? 'Un nuevo camino en familia'
+          : sheet() === 'goal'
+            ? 'Su meta, desde tu vista'
+            : 'Acompañar a ' + dialogChild?.profile?.name
+      "
+      (closed)="sheet.set('')"
+    >
+      @switch (sheet()) {
+        @case ('add') {
+          <form (ngSubmit)="saveChild()">
+            <label class="field-label" for="new-child-name">Nombre</label
+            ><input
+              id="new-child-name"
+              name="name"
+              [(ngModel)]="name"
+              required
+              maxlength="24"
+            /><label class="field-label" for="new-child-age">Edad (10 a 17)</label
+            ><input
+              id="new-child-age"
+              name="age"
+              type="number"
+              min="10"
+              max="17"
+              step="1"
+              [(ngModel)]="age"
+              required
+            /><label class="field-label" for="new-child-budget"
+              >Aporte semanal para ahorrar (S/)</label
+            ><input
+              id="new-child-budget"
+              name="budget"
+              type="number"
+              min="0"
+              max="10000"
+              step="0.01"
+              [(ngModel)]="budget"
+              required
+            /><button class="primary full form-submit" type="submit">Añadir perfil</button>
+          </form>
+        }
+        @case ('contribute') {
+          <p class="sheet-description">
+            Este aporte voluntario va a una meta de {{ dialogChild?.profile?.name }}. No crea un
+            préstamo ni condiciones de devolución.
+          </p>
+          <form (ngSubmit)="sendContribution()">
+            <label class="field-label" for="parent-contribution-goal"
+              >Meta de {{ dialogChild?.profile?.name }}</label
+            ><select id="parent-contribution-goal" name="goal" [(ngModel)]="goalId">
+              @for (g of dialogChild?.goals ?? []; track g.id) {
+                @if (!completed(g)) {
+                  <option [ngValue]="g.id">{{ g.name }}</option>
+                }
+              }</select
+            ><label class="field-label" for="parent-contribution-amount"
+              >Aporte voluntario (S/)</label
+            ><input
+              id="parent-contribution-amount"
+              name="amount"
+              type="number"
+              min="0.01"
+              max="100000"
+              step="0.01"
+              [(ngModel)]="amount"
+              required
+            /><button class="primary full form-submit" type="submit">
+              Confirmar aporte a {{ dialogChild?.profile?.name }}
+            </button>
+          </form>
+        }
+        @case ('goal') {
+          @if (selectedGoal; as g) {
+            <span class="pill"
+              >{{ dialogChild?.profile?.name }} · {{ g.protected ? 'Protegida' : 'Flexible' }}</span
+            >
+            <h3 class="quiz-title">{{ g.name }}</h3>
+            <div class="detail-amount">
+              {{ money(g.saved) }}<small>reservados de {{ money(g.target) }}</small>
+            </div>
+            <div class="progress-track"><span [style.width.%]="progress(g)"></span></div>
+            <p class="sheet-description">
+              {{ g.weeks }} semanas de plan.
+              {{
+                completed(g)
+                  ? 'Logro conservado.'
+                  : 'Aporte sugerido para el monto restante: ' +
+                    money((g.target - g.saved) / g.weeks) +
+                    ' por semana.'
+              }}
+            </p>
+            <div class="info-card">
+              <app-icon name="heart" />
+              <p>
+                {{ dialogChild?.profile?.name }} conserva el protagonismo de sus metas. Puedes
+                conversar, aportar y acompañar desde esta vista.
+              </p>
+            </div>
+          }
+        }
+      }
+      @if (error) {
+        <p class="form-error" role="alert">{{ error }}</p>
+      }
+    </app-action-sheet>
+  }
+</div>

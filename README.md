@@ -25,12 +25,22 @@ La compilación estática queda en `dist/sueno/browser`. No abrir `src/index.htm
 
 1. **Inicio**: Alex tiene S/ 165 disponibles y S/ 180 reservados para una tablet de S/ 600. Agregar S/ 20; el disponible baja y la meta sube. El dinero no se cuenta dos veces.
 2. **Protegido**: explicar el compromiso; abrir la meta y solicitar un retiro anticipado de S/ 30, indicando un motivo. El dinero sigue reservado.
-3. **Familia**: autorizar el retiro o elegir conversar primero. Mostrar un aporte voluntario y enviar ánimo; el mensaje aparece en Inicio. El resumen muestra los movimientos de esta demo.
+3. **Vista del adulto**: alternar con el selector externo, abrir el detalle de Alex y autorizar el retiro o elegir conversar primero. Mostrar un aporte voluntario y enviar ánimo; el mensaje aparece en el Inicio del hijo. Seleccionar a Lucía para mostrar sus propias metas y estadísticas.
 4. **Aprende**: mover la edad a 10 y luego a 17 desde el panel. Cambian el estilo visual, los ejemplos, el vocabulario y las actividades.
 5. **Escenarios**: cargar «¡Lo logré!» para mostrar la meta al 100%. Los escenarios piden confirmar porque reemplazan los saldos y metas simulados; conservan nombre, edad y preferencias.
 6. **Modo presentación**: oculta los elementos externos y amplía el teléfono. El botón superior permite salir.
 
 En una pantalla estrecha la app ocupa el celular real. El botón flotante de controles abre la configuración de demostración.
+
+## Familia y préstamos educativos
+
+La vista adulta tiene Resumen, Hijos, Préstamos y Actividad. La vista del hijo conserva su experiencia de ahorro y añade una pestaña Préstamos. El detalle de un hijo siempre permanece en la vista adulta; las métricas familiares no aparecen en la vista infantil.
+
+Para presentar el flujo nuevo: solicitar un anticipo como hijo; proponer importe, actividad repetible, unidades y calendario como adulto; aceptar como hijo; registrar entregas parciales y validarlas como adulto. El desembolso ocurre una sola vez, del fondo familiar al saldo libre del hijo correcto. Las tareas no generan devoluciones ficticias de dinero al padre.
+
+Las unidades adicionales por demora son opcionales, con límite y plazo; no se capitalizan. Una condición nueva en un acuerdo activo necesita aceptación y entra en vigor al día siguiente. Se pueden desactivar sin borrar el antecedente de demora. El reloj externo permite avanzar días. Las estadísticas son observadas, con tamaño de muestra: no predicen solvencia ni constituyen historial crediticio oficial.
+
+Consultar [reglas, permisos, estados, investigación y recorrido completo](docs/REGLAS-FAMILIA-Y-PRESTAMOS.md). Los perfiles de ejemplo incluyen historiales ficticios diferentes; un nuevo hijo comienza sin historial.
 
 ## Qué funciona
 
@@ -51,6 +61,10 @@ En una pantalla estrecha la app ocupa el celular real. El botón flotante de con
 | --- | --- |
 | `src/app/app.component.*` | Presentación y panel externo |
 | `src/app/mobile/mobile.component.*` | Pantallas móviles, navegación y formularios |
+| `src/app/parent/` | Navegación adulta, hijos, métricas y acompañamiento |
+| `src/app/loans/` | Interfaz de préstamos compartida con acciones por rol |
+| `src/app/core/loan-engine.ts` | Comandos y transiciones de acuerdos |
+| `src/app/core/agreement-rules.ts` | Calendario, mora y métricas observadas |
 | `src/app/core/demo.store.ts` | Estado, persistencia, migración y reglas de dinero |
 | `src/app/core/models.ts` | Tipos y formato monetario |
 | `src/app/core/lessons.ts` | Contenido y respuestas según edad |
@@ -61,7 +75,7 @@ En una pantalla estrecha la app ocupa el celular real. El botón flotante de con
 | `docs/DISENO.md` | Referencias y decisiones visuales |
 | `docs/legacy/` | Copia de la demo JavaScript anterior |
 
-Los datos actuales usan `primer-sueno-angular-v5` en `localStorage`. Si aún no existen, se intenta copiar `primer-sueno-demo-v2`, incluidas las metas personalizadas. La clave anterior no se borra ni se sobrescribe. El historial anterior conserva sus textos; los importes que no existían no se inventan. La persistencia depende del origen: los datos de GitHub Pages no se pueden leer desde localhost.
+Los datos familiares actuales usan `primer-sueno-familia-v6` en `localStorage`. Si aún no existen, se importa `primer-sueno-angular-v5` como primer hijo, con la migración anterior de `primer-sueno-demo-v2` cuando corresponde. Las claves anteriores no se borran ni se sobrescriben. La persistencia depende del origen: los datos de GitHub Pages no se pueden leer desde localhost. Los escenarios reemplazan el estado financiero y los acuerdos de toda la familia tras confirmación; conservan los perfiles.
 
 Las fuentes e ilustraciones se sirven desde el proyecto, sin peticiones externas durante el uso. No hay instalación PWA ni caché de servicio: se necesita mantener el servidor local abierto.
 
