@@ -20,12 +20,12 @@ test('el silencio de 14 días es neutral; confirmar tarde conserva fechas y no c
   const reportId = report(f, id, task);
   const r = () => loan(f, id).tasks[0].reports![0];
   f.today = addDays(original, 2);
-  expect(reviewReminder(r(), f.today)).toContain('48 horas');
+  expect(reviewReminder(r(), f.today)).toContain('2 días');
   f.today = addDays(original, 7);
   expect(reviewReminder(r(), f.today)).toContain('7 días');
   f.today = addDays(original, 14);
   observeDelays(f);
-  expect(reportEvidence(r(), f.today)).toContain('no verificable');
+  expect(reportEvidence(r(), f.today)).toContain('Sin respuesta');
   expect(evidenceSummary(loan(f, id), f.today).neutral).toBe(1);
   expect(agreementMetrics(f.agreements, f.today).onTimeRate).toBeNull();
   expect(penaltyUnits(loan(f, id), f.today)).toBe(0);
@@ -35,7 +35,7 @@ test('el silencio de 14 días es neutral; confirmar tarde conserva fechas y no c
   expect(r().submittedAt).toBe(original);
   expect(r().validatedAt).toBe(f.today);
   expect(loan(f, id).completedAt).toBe(original);
-  expect(reportEvidence(r(), f.today)).toBe('Confirmación familiar tardía');
+  expect(reportEvidence(r(), f.today)).toBe('Confirmado después de 14 días');
 });
 
 test('declarar una actividad pasada no retrocede el reporte ni vuelve puntual una entrega tardía', () => {
@@ -114,7 +114,7 @@ test('no se duplican unidades al cuestionar un reporte que ya tiene reemplazo', 
       reportId: old,
       reason: 'Revisemos',
     })
-  ).toContain('reemplazo');
+  ).toContain('otro aviso');
 });
 
 test('el calendario original se conserva al aceptar una ampliación', () => {
@@ -265,7 +265,7 @@ test('el calendario respeta unidad, cantidad, frecuencia y remanente final', () 
     [1, '2026-11-16'],
   ]);
   expect(send(f, 'child', 'alex', { type: 'request', amount: 10, reason: 'Otro' })).toContain(
-    'abierta'
+    'pendiente'
   );
 });
 
@@ -317,7 +317,7 @@ test('la demora del adulto al validar no penaliza una entrega puntual del hijo',
   f.today = '2026-11-20';
   observeDelays(f);
   expect(penaltyUnits(loan(f, id), f.today)).toBe(0);
-  expect(agreementStatus(loan(f, id), f.today)).toBe('En revisión familiar');
+  expect(agreementStatus(loan(f, id), f.today)).toBe('Esperando confirmación familiar');
   submissions.forEach((r) => review(f, id, r.taskId, r.reportId));
   expect(loan(f, id).completedAt).toBe('2026-11-08');
   expect(loan(f, id).validatedAt).toBe('2026-11-20');
@@ -332,7 +332,7 @@ test('mora diaria lineal con tope; no se cierra un préstamo con unidades adicio
   f.today = '2026-11-12';
   observeDelays(f);
   expect(penaltyUnits(loan(f, id), f.today)).toBe(12);
-  expect(agreementStatus(loan(f, id), f.today)).toBe('En mora');
+  expect(agreementStatus(loan(f, id), f.today)).toBe('Con retraso');
   for (const taskId of loan(f, id).tasks.map((t) => t.id)) {
     const r = report(f, id, taskId);
     review(f, id, taskId, r);
@@ -358,7 +358,7 @@ test('sin recargo se registra la mora; desactivarlo no borra el retraso ni devue
     policy: { ...terms().latePolicy, enabled: false },
   });
   expect(penaltyUnits(loan(f, id), f.today)).toBe(0);
-  expect(agreementStatus(loan(f, id), f.today)).toBe('En mora');
+  expect(agreementStatus(loan(f, id), f.today)).toBe('Con retraso');
   expect(loan(f, id).hadOverdue).toBe(true);
   for (const taskId of loan(f, id).tasks.map((t) => t.id)) {
     const r = report(f, id, taskId);

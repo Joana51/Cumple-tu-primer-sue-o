@@ -46,6 +46,8 @@ Cada acuerdo distingue cumplimiento y calidad de evidencia. Los reportes tienen 
 
 **Documento clave: [ORIGEN](docs/CLAVE-ORIGEN.md)** reúne los flujos implementados, la investigación sobre fotos y alternativas, los límites legales/técnicos y los supuestos de seguridad de producción.
 
+La [guía de voz y lenguaje](docs/VOZ-Y-LENGUAJE.md) explica la revisión de los textos y sus fuentes: los préstamos muestran una actividad y las veces que debe hacerse, las acciones nombran su resultado y los errores indican qué corregir. El modelo interno conserva sus identificadores y reglas.
+
 ## Qué funciona
 
 - Inicio, sueños, ahorro protegido, aprendizaje, familia y perfil.

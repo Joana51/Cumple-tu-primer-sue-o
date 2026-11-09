@@ -20,31 +20,31 @@
   @case ('list') {
     <section class="loan-intro">
       <span class="eyebrow">APRENDER A CUMPLIR LO ACORDADO</span>
-      <h1>{{ parent() ? 'Préstamos en familia.' : 'Un anticipo. Un acuerdo.' }}</h1>
+      <h1>{{ parent() ? 'Préstamos en familia.' : 'Pide dinero. Acuerda cómo cumplir.' }}</h1>
       <p>
         {{
           parent()
-            ? 'Condiciones claras, entregas visibles y espacio para conversar.'
-            : 'Tu familia puede adelantarte dinero. Tú cumples acciones que acuerdan juntos.'
+            ? 'Adelanta dinero y acuerden una actividad, cuántas veces hacerla y en qué fechas.'
+            : 'Pide dinero para tus planes. Tu familia propone actividades y fechas; tú decides si aceptas.'
         }}
       </p>
       <div class="loan-definition">
-        Simulación educativa · Se devuelve con acciones, no con dinero.
+        En esta demo, tu familia adelanta dinero y tú cumples actividades acordadas. No devuelves
+        dinero.
       </div>
       <details class="evidence-guide">
-        <summary>Cumplimiento y evidencia: ¿qué se registra?</summary>
+        <summary>¿Cómo funciona un préstamo familiar?</summary>
         <p>
-          Todos los acuerdos conservan sus resultados. No se eligen solo los exitosos ni se envían a
-          un banco.
+          1. Pide o propone un monto. La familia acuerda una actividad, cuántas veces hacerla y sus
+          fechas.
         </p>
         <p>
-          Una confirmación familiar no es una verificación independiente. Si falta revisión, el
-          resultado queda pendiente; a los 14 días se muestra como no verificable, sin atribuir
-          incumplimiento ni confirmar un éxito.
+          2. El hijo acepta para recibir el dinero. Después avisa de lo que hizo y el adulto lo
+          confirma.
         </p>
         <p>
-          Los recordatorios de 48 horas y 7 días aparecen aquí. Puedes cuestionar una observación y
-          conversar sin cambiar las fechas originales.
+          3. Si la familia no responde en 14 días, el aviso queda sin confirmar. Eso no significa
+          que la actividad se haya incumplido. Se puede conversar y revisar más tarde.
         </p>
       </details>
     </section>
@@ -52,7 +52,10 @@
       <app-icon name="plus" />{{ parent() ? 'Proponer un préstamo' : 'Solicitar un préstamo' }}
     </button>
     @if (open()) {
-      <p class="input-hint">Un préstamo o solicitud a la vez para este perfil.</p>
+      <p class="input-hint">
+        Primero resuelvan el préstamo o la solicitud pendiente. Solo se permite uno a la vez por
+        hijo.
+      </p>
     }
     <div class="loan-filters" aria-label="Filtrar préstamos">
       @for (f of ['todos', 'solicitudes', 'vigentes', 'mora', 'cerrados']; track f) {
@@ -63,9 +66,9 @@
               : f === 'solicitudes'
                 ? 'Solicitudes'
                 : f === 'vigentes'
-                  ? 'Vigentes'
+                  ? 'En curso'
                   : f === 'mora'
-                    ? 'En mora'
+                    ? 'Con retraso'
                     : 'Completados'
           }}
         </button>
@@ -77,27 +80,30 @@
           <span
             class="pill"
             [class.green]="a.status === 'completed'"
-            [class.amber]="status(a) === 'En mora'"
+            [class.amber]="status(a) === 'Con retraso'"
             ><app-icon [name]="a.status === 'completed' ? 'check' : 'clock'" />{{ status(a) }}</span
           ><app-icon name="chevron" />
         </div>
         <h3>{{ a.title }}</h3>
         @if (evidenceSummary(a, today()).neutral; as count) {
-          <p class="review-reminder">{{ count }} reporte(s) sin conclusión verificable</p>
+          <p class="review-reminder">{{ count }} avisos sin información suficiente</p>
         }
         <div class="row">
           <strong>{{ money(a.amount) }}</strong
           ><small>{{
             a.status === 'requested'
-              ? 'Por revisar'
+              ? 'Solicitud por revisar'
               : a.status === 'offered'
                 ? 'Aún no entregado'
-                : 'Anticipo familiar'
+                : 'Dinero adelantado'
           }}</small>
         </div>
         @if (a.acceptedAt) {
           <div class="progress-track"><span [style.width.%]="progress(a)"></span></div>
-          <p>{{ progress(a) }}% de unidades base confirmadas · {{ dateLabel(a.dueDate) }}</p>
+          <p>
+            {{ progress(a) }}% de actividades acordadas confirmadas · Hasta el
+            {{ dateLabel(a.dueDate) }}
+          </p>
         }
       </button>
     } @empty {
@@ -110,15 +116,15 @@
               : 'No hay préstamos en este estado.'
           }}
         </h3>
-        <p>Las solicitudes y sus condiciones tendrán aquí su propio espacio.</p>
+        <p>Solicita un préstamo o cambia el filtro para ver los que ya existen.</p>
       </div>
     }
   }
   @case ('request') {
-    <h2 class="loan-form-title">Cuéntale tu plan.</h2>
+    <h2 class="loan-form-title">Solicitar un préstamo familiar.</h2>
     <p class="sheet-description">
-      Tu familia revisará el monto y propondrá las condiciones. Solicitar no suma dinero a tu
-      cuenta.
+      Indica cuánto necesitas y para qué. Tu familia propondrá las actividades; el dinero llega
+      cuando aceptes esa propuesta.
     </p>
     <form (ngSubmit)="request()">
       <label class="field-label" for="loan-request-amount">Monto que solicitas (S/)</label
@@ -132,9 +138,9 @@
         [(ngModel)]="amount"
         required
       />
-      <label class="field-label" for="loan-request-goal">¿A qué sueño se relaciona?</label
+      <label class="field-label" for="loan-request-goal">¿Para qué meta de ahorro?</label
       ><select id="loan-request-goal" name="goal" [(ngModel)]="goalId">
-        <option value="">Otro propósito</option>
+        <option value="">Sin vincular a una meta</option>
         @for (g of child().goals; track g.id) {
           @if (!g.completedAt && g.saved < g.target) {
             <option [ngValue]="g.id">{{ g.name }}</option>
@@ -159,21 +165,24 @@
   @case ('offer') {
     <div class="wizard-progress">
       <span>PASO {{ step + 1 }} DE 4</span
-      ><strong>{{ ['El anticipo', 'Las entregas', 'La demora', 'Revisar juntos'][step] }}</strong>
+      ><strong>{{
+        ['El dinero', 'Las actividades', 'Los retrasos', 'Revisar propuesta'][step]
+      }}</strong>
     </div>
     <form (ngSubmit)="nextOffer()">
       @switch (step) {
         @case (0) {
           <h2 class="loan-form-title">Un plan para {{ child().profile.name }}.</h2>
           <p class="sheet-description">
-            Fondo familiar disponible: <strong>{{ money(store.family().parent.balance) }}</strong
-            >. El dinero se entrega después de su aceptación.
+            Dinero familiar disponible para prestar:
+            <strong>{{ money(store.family().parent.balance) }}</strong
+            >. Se añadirá al saldo de tu hijo o hija cuando acepte la propuesta.
           </p>
           <label class="field-label" for="loan-title">Nombre del préstamo</label
           ><input id="loan-title" name="title" [(ngModel)]="title" maxlength="60" required /><label
             class="field-label"
             for="loan-offer-amount"
-            >Anticipo (S/)</label
+            >Dinero que adelantas (S/)</label
           ><input
             id="loan-offer-amount"
             name="amount"
@@ -185,9 +194,9 @@
             required
           />
           @if (!selected()) {
-            <label class="field-label" for="loan-offer-goal">Sueño relacionado</label
+            <label class="field-label" for="loan-offer-goal">Meta de ahorro relacionada</label
             ><select id="loan-offer-goal" name="goal" [(ngModel)]="goalId">
-              <option value="">Otro propósito</option>
+              <option value="">Sin vincular a una meta</option>
               @for (g of child().goals; track g.id) {
                 @if (!g.completedAt && g.saved < g.target) {
                   <option [ngValue]="g.id">{{ g.name }}</option>
@@ -195,7 +204,7 @@
               }
             </select>
           }
-          <label class="field-label" for="loan-terms">Condiciones que quieren acordar</label
+          <label class="field-label" for="loan-terms">Otros acuerdos (opcional)</label
           ><textarea
             id="loan-terms"
             name="terms"
@@ -205,23 +214,24 @@
           ></textarea>
         }
         @case (1) {
-          <h2 class="loan-form-title">¿Cómo lo devolverá?</h2>
-          <label class="field-label" for="loan-unit">Unidad de pago, en tus palabras</label
+          <h2 class="loan-form-title">¿Qué actividad se compromete a hacer?</h2>
+          <label class="field-label" for="loan-unit">Actividad a realizar</label
           ><input
             id="loan-unit"
             name="unit"
             [(ngModel)]="terms.unitLabel"
             maxlength="120"
             required
-            placeholder="Ej. Sesión de lectura de 15 minutos"
+            placeholder="Ej. Leer durante 15 minutos"
           />
           <p class="input-hint">
-            Elige una acción repetible, segura y adecuada a su edad. No condiciones necesidades
-            básicas.
+            Escribe una actividad concreta y que pueda repetirse. Por ejemplo: «Leer durante 15
+            minutos». Acuerden algo seguro y adecuado a su edad. Las necesidades básicas no deben
+            depender de estas actividades.
           </p>
           <div class="form-columns">
             <div>
-              <label class="field-label" for="loan-total">Unidades en total</label
+              <label class="field-label" for="loan-total">Veces en total</label
               ><input
                 id="loan-total"
                 name="total"
@@ -234,7 +244,7 @@
               />
             </div>
             <div>
-              <label class="field-label" for="loan-per-delivery">Unidades por entrega</label
+              <label class="field-label" for="loan-per-delivery">Veces por fecha</label
               ><input
                 id="loan-per-delivery"
                 name="per"
@@ -249,7 +259,7 @@
           </div>
           <div class="form-columns">
             <div>
-              <label class="field-label" for="loan-interval">Cada cuántos días</label
+              <label class="field-label" for="loan-interval">Días entre fechas</label
               ><input
                 id="loan-interval"
                 name="interval"
@@ -262,7 +272,7 @@
               />
             </div>
             <div>
-              <label class="field-label" for="loan-first-due">Primera entrega en días</label
+              <label class="field-label" for="loan-first-due">Primera fecha: en días</label
               ><input
                 id="loan-first-due"
                 name="first"
@@ -275,17 +285,14 @@
               />
             </div>
           </div>
-          <p class="suggestion">
-            {{ terms.totalUnits }} unidades, {{ terms.unitsPerInstallment }} por entrega, cada
-            {{ terms.intervalDays }} días. Los plazos empiezan al aceptar el anticipo.
-          </p>
+          <p class="suggestion" aria-live="polite">{{ activityPlan(terms) }}</p>
         }
         @case (2) {
-          <h2 class="loan-form-title">Decidir sobre la demora.</h2>
+          <h2 class="loan-form-title">¿Qué ocurre si hay retraso?</h2>
           <label class="protect-toggle" for="loan-late-enabled"
             ><app-icon name="clock" /><span
-              ><strong>Unidades adicionales por demora</strong
-              ><small>Opcional, con tope y aceptación previa.</small></span
+              ><strong>Actividades extra por retraso</strong
+              ><small>Opcional. Requiere un límite y aceptación del hijo.</small></span
             ><input
               id="loan-late-enabled"
               name="enabled"
@@ -295,7 +302,7 @@
           @if (terms.latePolicy.enabled) {
             <div class="form-columns">
               <div>
-                <label class="field-label" for="loan-late-rate">Unidades extra por día</label
+                <label class="field-label" for="loan-late-rate">Veces extra por día</label
                 ><input
                   id="loan-late-rate"
                   name="rate"
@@ -307,7 +314,7 @@
                 />
               </div>
               <div>
-                <label class="field-label" for="loan-late-cap">Máximo de unidades extra</label
+                <label class="field-label" for="loan-late-cap">Máximo de veces extra en total</label
                 ><input
                   id="loan-late-cap"
                   name="cap"
@@ -321,7 +328,8 @@
             </div>
             <div class="form-columns">
               <div>
-                <label class="field-label" for="loan-grace">Días de gracia</label
+                <label class="field-label" for="loan-grace"
+                  >Días de espera antes de sumar extras</label
                 ><input
                   id="loan-grace"
                   name="grace"
@@ -333,7 +341,8 @@
                 />
               </div>
               <div>
-                <label class="field-label" for="loan-extra-days">Plazo adicional en días</label
+                <label class="field-label" for="loan-extra-days"
+                  >Días para completar las actividades extra</label
                 ><input
                   id="loan-extra-days"
                   name="extra"
@@ -346,44 +355,43 @@
               </div>
             </div>
             <div class="suggestion">
-              Se usa la misma unidad: {{ terms.unitLabel }}. Se suma una sola vez por día con
-              entregas pendientes, sin interés compuesto, hasta el tope acordado.
+              Actividad extra: «{{ terms.unitLabel }}». Por cada día de retraso, se añade hacerla
+              {{ times(terms.latePolicy.unitsPerDay) }}, hasta
+              {{ times(terms.latePolicy.capUnits) }} extra en total. Las actividades extra no
+              generan otras actividades extra.
             </div>
           } @else {
             <div class="info-card">
               <app-icon name="heart" />
               <p>
-                Sin unidades adicionales. Los retrasos quedan registrados y pueden conversar o
-                ampliar los plazos.
+                No se añadirán actividades por retrasarse. Si pasa, podrán conversar y proponer otra
+                fecha.
               </p>
             </div>
           }
         }
         @case (3) {
-          <h2 class="loan-form-title">Así quedaría el acuerdo.</h2>
+          <h2 class="loan-form-title">Revisa la propuesta antes de enviarla.</h2>
           <div class="loan-contract">
             <span>PARA {{ child().profile.name.toUpperCase() }}</span>
             <h3>{{ title }}</h3>
             <strong>{{ money(terms.amount) }}</strong>
-            <p>{{ terms.totalUnits }} × {{ terms.unitLabel }}</p>
-            <p>
-              {{ terms.unitsPerInstallment }} unidades cada {{ terms.intervalDays }} días. Primera
-              entrega {{ terms.firstDueDays }} días después de aceptar.
-            </p>
+            <p>{{ activityPlan(terms) }}</p>
             <p>{{ terms.terms }}</p>
-            <p>
-              {{
-                terms.latePolicy.enabled
-                  ? 'Demora: ' +
-                    terms.latePolicy.unitsPerDay +
-                    ' unidades por día, máximo ' +
-                    terms.latePolicy.capUnits +
-                    ', con ' +
-                    terms.latePolicy.graceDays +
-                    ' días de gracia.'
-                  : 'Sin unidades adicionales por demora.'
-              }}
-            </p>
+            @if (terms.latePolicy.enabled) {
+              <p>
+                Si hay retraso: hacer la misma actividad
+                {{ times(terms.latePolicy.unitsPerDay) }} extra por día, hasta
+                {{ times(terms.latePolicy.capUnits) }} extra en total.
+              </p>
+              <p>
+                Se esperan {{ days(terms.latePolicy.graceDays) }} antes de sumar extras. Hay
+                {{ days(terms.latePolicy.paymentWindowDays) }} más, después de la última fecha
+                acordada, para terminarlas.
+              </p>
+            } @else {
+              <p>Sin actividades extra por retraso.</p>
+            }
           </div>
           <p class="sheet-description">
             {{ child().profile.name }} deberá leer y aceptar esta propuesta. El dinero irá a su
@@ -409,7 +417,7 @@
         <span
           class="pill"
           [class.green]="a.status === 'completed'"
-          [class.amber]="status(a) === 'En mora'"
+          [class.amber]="status(a) === 'Con retraso'"
           >{{ status(a) }}</span
         >
         <h2>{{ a.title }}</h2>
@@ -418,41 +426,41 @@
       </div>
       @if (a.acceptedAt) {
         @let evidence = evidenceSummary(a, today());
-        <section class="evidence-panel" aria-label="Calidad de la evidencia">
+        <section class="evidence-panel" aria-label="Confirmaciones de la familia">
           <div class="row">
-            <h3>Cumplimiento y evidencia</h3>
+            <h3>Confirmaciones del acuerdo</h3>
             <app-icon name="shield" />
           </div>
           <span class="tiny-pill">REGISTRO FAMILIAR · SIMULADO</span>
           <p>
-            {{ evidence.confirmed }} reportes confirmados por la familia ·
+            {{ evidence.confirmed }} avisos confirmados por la familia ·
             {{ evidence.pending }} pendientes.
           </p>
           @if (evidence.neutral) {
             <p class="review-reminder">
-              {{ evidence.neutral }} reporte(s) sin conclusión verificable. No equivalen a éxito ni
-              a incumplimiento verificable.
+              {{ evidence.neutral }} avisos sin información suficiente. No se dan por hechos ni por
+              incumplidos.
             </p>
           }
           @if (evidence.late) {
             <p>
-              {{ evidence.late }} confirmación(es) tardía(s). Conservan la fecha del reporte
-              original.
+              {{ evidence.late }} respuestas recibidas después de 14 días. La fecha del primer aviso
+              no cambia.
             </p>
           }
           <details>
-            <summary>Qué puede demostrar este registro</summary>
+            <summary>¿Esto cuenta como historial crediticio?</summary>
             <p>
-              Se registraron declaraciones y revisiones familiares en esta demo. No hay validación
-              independiente de las actividades ni de dinero real.
+              No. Esta demo guarda lo que el hijo avisa y lo que confirma la familia. No comprueba
+              por otra fuente que la actividad ocurrió.
             </p>
             <p>
-              El estado familiar del préstamo y la calidad de su evidencia son distintos. Ni las
-              confirmaciones ni las unidades por mora generan un score bancario.
+              Completar el acuerdo familiar no genera una calificación bancaria ni garantiza un
+              crédito futuro.
             </p>
             <p>
-              Se conservan todos los resultados del perfil: confirmados, pendientes y observados. No
-              existe una selección de éxitos para un historial futuro.
+              Aquí se conservan todos los resultados, también los pendientes. No se envía
+              información a bancos.
             </p>
           </details>
         </section>
@@ -461,50 +469,57 @@
         <div class="info-card">
           <app-icon name="clock" />
           <p>
-            Tu solicitud está en revisión. Todavía no hay un anticipo entregado ni obligaciones
-            activas.
+            La familia debe preparar una propuesta. Hasta que se acepte, el dinero no se entrega y
+            las actividades no empiezan.
           </p>
         </div>
         @if (parent()) {
-          <button class="primary full form-submit" (click)="offer(a)">Proponer condiciones</button
+          <button class="primary full form-submit" (click)="offer(a)">Preparar propuesta</button
           ><button class="secondary full form-submit" (click)="decline()">
-            Conversar otro plan
+            No aceptar esta solicitud
           </button>
         }
       }
       @if (a.status === 'offered' || a.acceptedAt) {
         <div class="section-heading"><h2>Lo que acordamos</h2></div>
         <div class="loan-contract">
-          <p><b>Unidad:</b> {{ a.unitLabel ?? a.tasks[0]?.title }}</p>
-          <p><b>Cantidad:</b> {{ a.totalUnits ?? a.tasks.length }} unidades base</p>
-          <p>
-            <b>Frecuencia:</b> {{ a.unitsPerInstallment ?? 1 }} unidad(es) cada
-            {{ a.intervalDays ?? a.days }} días
-          </p>
+          @if (a.unitLabel) {
+            <p><b>Actividad:</b> {{ a.unitLabel }}</p>
+            <p><b>Compromiso:</b> hacerla {{ times(a.totalUnits ?? a.tasks.length) }} en total.</p>
+            <p>
+              <b>Calendario:</b> {{ times(a.unitsPerInstallment ?? 1) }} cada
+              {{ days(a.intervalDays ?? a.days) }}.
+            </p>
+          } @else {
+            <p><b>Actividades:</b> revisa qué hay que hacer y cuándo en la lista de abajo.</p>
+          }
           <p>{{ a.terms }}</p>
           <p>
             {{
               a.acceptedAt
-                ? 'Anticipo recibido el ' + dateLabel(a.acceptedAt)
+                ? 'Dinero recibido el ' + dateLabel(a.acceptedAt)
                 : 'Los vencimientos empezarán al aceptar.'
             }}
           </p>
           @if (a.latePolicy?.enabled) {
             <p class="loan-policy-text">
-              Demora: {{ a.latePolicy!.unitsPerDay }} unidades por día, tope
-              {{ a.latePolicy!.capUnits }}, gracia {{ a.latePolicy!.graceDays }} día(s).
-              {{ a.latePolicy!.paymentWindowDays }} días adicionales para completar el recargo. Sin
-              capitalización.
+              Si hay retraso: repetir la actividad {{ times(a.latePolicy!.unitsPerDay) }} extra por
+              día, hasta {{ times(a.latePolicy!.capUnits) }} extra en total. Se esperan
+              {{ days(a.latePolicy!.graceDays) }} antes de empezar a sumarlas. Hay
+              {{ days(a.latePolicy!.paymentWindowDays) }} más para terminarlas después de la última
+              fecha acordada o de activar este cambio, si ocurre después. Las actividades extra no
+              generan otras actividades extra.
             </p>
           } @else {
-            <p>Sin unidades adicionales por demora.</p>
+            <p>Sin actividades extra por retraso.</p>
           }
         </div>
       }
       @if (a.status === 'offered' && !parent()) {
         <label class="loan-consent"
           ><input type="checkbox" [(ngModel)]="accepted" /><span
-            >Leí el monto, las acciones, los plazos y las condiciones. Estoy de acuerdo.</span
+            >Entiendo cuánto recibiré, qué actividad haré, cuántas veces y en qué fechas. Acepto lo
+            acordado.</span
           ></label
         ><button class="primary full" [disabled]="!accepted" (click)="accept(true)">
           Aceptar y recibir {{ money(a.amount) }}</button
@@ -514,13 +529,13 @@
       }
       @if (a.status === 'active' || a.status === 'completed') {
         <div class="section-heading">
-          <h2>Entregas del préstamo</h2>
-          <span class="tiny-pill">{{ progress(a) }}% BASE</span>
+          <h2>Actividades y fechas acordadas</h2>
+          <span class="tiny-pill">{{ progress(a) }}% CONFIRMADO</span>
         </div>
         @for (t of a.tasks; track t.id; let i = $index) {
           <article class="installment-card">
             <div class="row">
-              <strong>Entrega {{ i + 1 }}</strong
+              <strong>Fecha {{ i + 1 }}</strong
               ><span class="tiny-pill" [class.green]="taskValidated(t) >= (t.units ?? 1)">{{
                 dateLabel(t.dueDate ?? a.dueDate)
               }}</span>
@@ -531,7 +546,7 @@
               </p>
             }
             <h3>{{ t.title }}</h3>
-            <p>{{ taskValidated(t) }} de {{ t.units ?? 1 }} unidades confirmadas</p>
+            <p>Veces confirmadas: {{ taskValidated(t) }} de {{ t.units ?? 1 }}</p>
             @for (r of taskReports(t); track r.id) {
               <app-report-card
                 [report]="r"
@@ -544,26 +559,29 @@
               />
             }
             @if (!parent() && a.status === 'active' && taskReported(t) < (t.units ?? 1)) {
-              <button class="secondary full" (click)="report(t.id)">Registrar entrega</button>
+              <button class="secondary full" (click)="report(t.id)">
+                Avisar que hice la actividad
+              </button>
             }
           </article>
         }
         @if (parent() && a.status === 'active') {
           <label class="field-label" for="review-feedback"
-            >Mensaje si hay que revisar una entrega</label
+            >Mensaje si falta completar la actividad</label
           ><input id="review-feedback" [(ngModel)]="feedback" maxlength="180" />
         }
         @if (a.latePolicy?.enabled || penalty(a) > 0) {
           <div class="penalty-card">
             <div class="row">
-              <h3>Unidades por demora</h3>
+              <h3>Actividades extra por retraso</h3>
               <app-icon name="clock" />
             </div>
             <p>
-              {{ penalty(a) }} generadas · {{ penaltyValidated(a) }} confirmadas · tope
-              {{ a.latePolicy?.capUnits ?? 0 }}
+              Actividad extra: hacerla {{ times(penalty(a)) }} en total. Veces confirmadas:
+              {{ penaltyValidated(a) }}. Límite acordado:
+              {{ times(a.latePolicy?.capUnits ?? 0) }} extra.
             </p>
-            <p>La misma unidad: {{ a.unitLabel ?? a.tasks[0]?.title }}</p>
+            <p>Actividad a repetir: {{ a.unitLabel ?? a.tasks[0]?.title }}</p>
             <p>Plazo adicional: {{ dateLabel(penaltyDeadline(a)) }}</p>
             @for (r of a.penaltyReports ?? []; track r.id) {
               <app-report-card
@@ -578,7 +596,7 @@
             }
             @if (!parent() && a.status === 'active' && penaltyReported(a) < penalty(a)) {
               <button class="secondary full" (click)="report('penalty')">
-                Registrar unidades adicionales
+                Avisar de actividades extra realizadas
               </button>
             }
           </div>
@@ -590,9 +608,10 @@
               <p>El plazo vigente sigue siendo {{ dateLabel(a.dueDate) }} hasta su aceptación.</p>
               @if (!parent()) {
                 <div class="row">
-                  <button class="primary" (click)="acceptExtension(true)">Aceptar plazo</button
+                  <button class="primary" (click)="acceptExtension(true)">
+                    Aceptar nueva fecha</button
                   ><button class="secondary" (click)="acceptExtension(false)">
-                    Conservar actual
+                    Mantener mi fecha
                   </button>
                 </div>
               }
@@ -602,18 +621,21 @@
         @if (a.proposedLatePolicy) {
           <div class="pending-notice">
             <div>
-              <strong>Nuevas condiciones por demora</strong>
+              <strong>Propuesta de actividades extra</strong>
               <p>
-                {{ a.proposedLatePolicy.unitsPerDay }} unidades/día · máximo
-                {{ a.proposedLatePolicy.capUnits }} ·
-                {{ a.proposedLatePolicy.paymentWindowDays }} días adicionales. Desde su aceptación,
-                sin cobro retroactivo.
+                Actividad: {{ a.unitLabel ?? a.tasks[0]?.title }}. Hacerla
+                {{ times(a.proposedLatePolicy.unitsPerDay) }} extra por día de retraso, hasta
+                {{ times(a.proposedLatePolicy.capUnits) }} extra en total. Se esperan
+                {{ days(a.proposedLatePolicy.graceDays) }} antes de sumarlas. Plazo extra:
+                {{ days(a.proposedLatePolicy.paymentWindowDays) }}. Solo se aplica desde el día
+                siguiente de aceptar, nunca a días anteriores.
               </p>
               @if (!parent()) {
                 <div class="row">
-                  <button class="primary" (click)="acceptPolicy(true)">Aceptar condiciones</button
+                  <button class="primary" (click)="acceptPolicy(true)">
+                    Aceptar actividades extra</button
                   ><button class="secondary" (click)="acceptPolicy(false)">
-                    Conservar actuales
+                    Mantener lo acordado
                   </button>
                 </div>
               }
@@ -626,17 +648,17 @@
             <button class="secondary full" (click)="extension()">Proponer nuevo plazo</button>
             @if (overdue(a) > 0) {
               <button class="secondary full" (click)="editPolicy()">
-                Configurar unidades por mora
+                Proponer actividades extra por retraso
               </button>
             }
             @if (a.latePolicy?.enabled) {
               <button class="text-button" (click)="disablePolicy()">
-                Desactivar recargo por demora
+                Quitar actividades extra pendientes
               </button>
             }
             <p>
-              Solo se completa cuando las unidades base y adicionales acordadas están confirmadas.
-              El retraso no se borra al desactivar el recargo.
+              El préstamo termina cuando la familia confirma todas las actividades acordadas y las
+              extra pendientes. Quitar las actividades extra no borra el retraso del historial.
             </p>
           </div>
         }
@@ -644,7 +666,7 @@
           <div class="no-requests">
             <app-icon name="trophy" />
             <div>
-              <strong>¡Acuerdo cumplido!</strong>
+              <strong>¡Préstamo completado!</strong>
               <p>
                 Entregado {{ dateLabel(a.completedAt) }} · confirmado
                 {{ dateLabel(a.validatedAt) }}. El dinero recibido no se vuelve a descontar.
@@ -667,7 +689,7 @@
                     : child().profile.name
               }}</small
             >
-            <p>{{ e.text }}</p>
+            <p>{{ readableEvent(e.text) }}</p>
           </div>
         }
       </details>
@@ -675,13 +697,13 @@
   }
   @case ('report') {
     @if (selected(); as a) {
-      <h2 class="loan-form-title">Un paso que ya hiciste.</h2>
+      <h2 class="loan-form-title">Avisa de tu avance.</h2>
       <p class="sheet-description">
-        {{ a.unitLabel ?? a.tasks[0]?.title }}. Puedes registrar hasta {{ remaining }} unidades. Tu
-        familia deberá confirmarlas.
+        Actividad: «{{ reportActivity }}». Puedes avisar que la hiciste hasta
+        {{ times(remaining) }}. Tu familia revisará tu aviso.
       </p>
       <form (ngSubmit)="sendReport()">
-        <label class="field-label" for="report-units">Unidades realizadas</label
+        <label class="field-label" for="report-units">¿Cuántas veces la realizaste?</label
         ><input
           id="report-units"
           name="units"
@@ -703,8 +725,8 @@
           required
         />
         <p class="input-hint">
-          Es una fecha declarada. El reporte quedará registrado hoy, {{ dateLabel(today()) }}. Una
-          fecha anterior no cambia la puntualidad ni los plazos.
+          Indicas tú cuándo la hiciste. Tu aviso se guarda hoy, {{ dateLabel(today()) }}. Elegir un
+          día anterior no cambia la fecha del aviso ni los plazos acordados.
         </p>
         <label class="field-label" for="report-note">Cuéntalo brevemente (opcional)</label>
         <textarea
@@ -724,13 +746,13 @@
     }
   }
   @case ('extension') {
-    <h2 class="loan-form-title">Un plazo que puedan cumplir.</h2>
+    <h2 class="loan-form-title">Proponer una nueva fecha.</h2>
     <p class="sheet-description">
-      Se moverán las entregas pendientes. Las confirmadas conservan su fecha. El adolescente debe
-      aceptar el cambio.
+      Las actividades pendientes tendrán nuevas fechas. Las ya confirmadas no cambian. El hijo o
+      hija debe aceptar la propuesta.
     </p>
     <form (ngSubmit)="proposeExtension()">
-      <label class="field-label" for="extension-date">Nuevo vencimiento final</label
+      <label class="field-label" for="extension-date">Nueva fecha para terminar</label
       ><input
         id="extension-date"
         name="date"
@@ -743,20 +765,22 @@
   }
   @case ('policy') {
     @if (selected(); as a) {
-      <h2 class="loan-form-title">Condiciones por demora.</h2>
+      <h2 class="loan-form-title">Actividades extra por retraso.</h2>
       <p class="sheet-description">
-        Unidad ya acordada: <strong>{{ a.unitLabel ?? a.tasks[0]?.title }}</strong
-        >. Una nueva condición se propone al adolescente antes de aplicarse.
+        Actividad acordada: <strong>{{ a.unitLabel ?? a.tasks[0]?.title }}</strong
+        >. El hijo o hija debe aceptar el cambio antes de aplicarlo.
       </p>
       <form (ngSubmit)="savePolicy()">
         <label class="protect-toggle" for="policy-enabled"
           ><span
-            ><strong>Activar unidades adicionales</strong
-            ><small>Puedes desactivarlas sin borrar el registro del retraso.</small></span
+            ><strong>Añadir actividades extra por retraso</strong
+            ><small
+              >Puedes quitar las extra pendientes. El retraso seguirá en el historial.</small
+            ></span
           ><input id="policy-enabled" name="enabled" type="checkbox" [(ngModel)]="policy.enabled"
         /></label>
         @if (policy.enabled) {
-          <label class="field-label" for="policy-rate">Unidades extra por día de demora</label
+          <label class="field-label" for="policy-rate">Veces extra por día de retraso</label
           ><input
             id="policy-rate"
             name="rate"
@@ -765,7 +789,7 @@
             max="100"
             [(ngModel)]="policy.unitsPerDay"
             required
-          /><label class="field-label" for="policy-cap">Máximo de unidades adicionales</label
+          /><label class="field-label" for="policy-cap">Máximo de veces extra en total</label
           ><input
             id="policy-cap"
             name="cap"
@@ -774,7 +798,8 @@
             max="1000"
             [(ngModel)]="policy.capUnits"
             required
-          /><label class="field-label" for="policy-grace">Días de gracia</label
+          /><label class="field-label" for="policy-grace"
+            >Días de espera antes de sumar extras</label
           ><input
             id="policy-grace"
             name="grace"
@@ -783,7 +808,8 @@
             max="30"
             [(ngModel)]="policy.graceDays"
             required
-          /><label class="field-label" for="policy-window">Plazo adicional en días</label
+          /><label class="field-label" for="policy-window"
+            >Días para completar las actividades extra</label
           ><input
             id="policy-window"
             name="window"
@@ -795,7 +821,7 @@
           />
         }
         <button class="primary full form-submit" type="submit">
-          {{ policy.enabled ? 'Proponer condiciones' : 'Desactivar recargo' }}
+          {{ policy.enabled ? 'Preparar propuesta' : 'Quitar actividades extra pendientes' }}
         </button>
       </form>
     }

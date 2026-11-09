@@ -21,6 +21,7 @@ import { LoanCommand, makeSchedule, termsError, policyError } from '../core/loan
 import { IconComponent } from '../shared/icon.component';
 import { ReportCardComponent } from './report-card.component';
 import { evidenceSummary } from '../core/evidence-rules';
+import { times, days, activityPlan, readableLoanEvent } from '../core/ui-copy';
 
 @Component({
   selector: 'app-loans',
@@ -49,7 +50,7 @@ export class LoansComponent {
   units = 1;
   performedAt = '';
   reportNote = '';
-  feedback = 'Revisemos esta entrega juntos.';
+  feedback = 'Conversemos sobre lo que falta completar.';
   newDate = '';
   terms: LoanTerms = this.defaults();
   policy: LatePolicy = this.defaultPolicy();
@@ -79,8 +80,10 @@ export class LoansComponent {
       (a) =>
         this.filter() === 'todos' ||
         (this.filter() === 'solicitudes' && ['requested', 'offered'].includes(a.status)) ||
-        (this.filter() === 'vigentes' && a.status === 'active' && this.status(a) !== 'En mora') ||
-        (this.filter() === 'mora' && this.status(a) === 'En mora') ||
+        (this.filter() === 'vigentes' &&
+          a.status === 'active' &&
+          this.status(a) !== 'Con retraso') ||
+        (this.filter() === 'mora' && this.status(a) === 'Con retraso') ||
         (this.filter() === 'cerrados' && a.status === 'completed')
     )
   );
@@ -94,6 +97,10 @@ export class LoansComponent {
   penaltyValidated = penaltyValidated;
   penaltyDeadline = penaltyDeadline;
   evidenceSummary = evidenceSummary;
+  times = times;
+  days = days;
+  activityPlan = activityPlan;
+  readableEvent = readableLoanEvent;
   constructor() {
     effect(() => {
       this.childId();
@@ -109,7 +116,7 @@ export class LoansComponent {
   defaults(): LoanTerms {
     return {
       amount: 20,
-      unitLabel: 'Sesión de lectura de 15 minutos',
+      unitLabel: 'Leer durante 15 minutos',
       totalUnits: 3,
       unitsPerInstallment: 1,
       intervalDays: 3,
@@ -143,6 +150,15 @@ export class LoansComponent {
         ? Math.max(0, (task.units ?? 1) - taskReported(task))
         : 0;
   }
+  get reportActivity() {
+    const a = this.selected();
+    return (
+      a?.tasks.find((t) => t.id === this.reportTaskId)?.title ??
+      a?.unitLabel ??
+      a?.tasks[0]?.title ??
+      'Actividad acordada'
+    );
+  }
   navigate(view: ReturnType<typeof this.view>) {
     this.error = '';
     this.view.set(view);
@@ -160,7 +176,7 @@ export class LoansComponent {
     this.amount = 20;
     this.reason = '';
     this.goalId = '';
-    this.title = 'Anticipo para mi próximo sueño';
+    this.title = 'Préstamo para mi meta';
     this.terms = this.defaults();
     this.step = 0;
     this.navigate(this.parent() ? 'offer' : 'request');
@@ -190,7 +206,7 @@ export class LoansComponent {
           reason: this.reason,
           goalId: this.goalId === '' ? undefined : Number(this.goalId),
         },
-        'Tu solicitud llegó a tu familia. Aún no se ha entregado dinero.'
+        'Solicitud enviada. Recibirás el dinero si acuerdan las actividades y aceptas la propuesta.'
       )
     )
       this.navigate('list');
@@ -234,7 +250,7 @@ export class LoansComponent {
           goalId: this.goalId === '' ? undefined : Number(this.goalId),
           terms: this.terms,
         },
-        'Propuesta enviada. El anticipo se entregará cuando la acepte.'
+        'Propuesta enviada. El dinero se entregará cuando la acepte.'
       )
     )
       this.navigate('list');
@@ -245,7 +261,7 @@ export class LoansComponent {
       this.command(
         { type: 'accept', id: a.id, accept: yes },
         yes
-          ? '¡Acuerdo aceptado! El anticipo está en tu saldo disponible.'
+          ? '¡Acuerdo aceptado! El dinero está en tu saldo disponible.'
           : 'Puedes conversar y pedir otra propuesta.'
       )
     )
@@ -279,7 +295,7 @@ export class LoansComponent {
           performedAt: this.performedAt,
           note: this.reportNote,
         },
-        'Entrega registrada. Tu familia podrá revisarla.'
+        'Aviso enviado. Tu familia podrá confirmar la actividad.'
       )
     )
       this.navigate('detail');
@@ -294,13 +310,15 @@ export class LoansComponent {
         accept: yes,
         feedback: this.feedback,
       },
-      yes ? 'Entrega confirmada.' : 'Se envió una observación para revisar juntos.'
+      yes
+        ? 'Actividad confirmada por tu familia.'
+        : 'Tu mensaje quedó guardado para conversar sobre la actividad.'
     );
   }
   dispute(taskId: string, reportId: string, reason: string) {
     this.command(
       { type: 'dispute', id: this.selectedId(), taskId, reportId, reason },
-      'Revisión solicitada. Se conserva tu reporte original.'
+      'Enviaste tu explicación. La fecha de tu primer aviso no cambia.'
     );
   }
   resolveDispute(
@@ -311,8 +329,8 @@ export class LoansComponent {
     this.command(
       { type: 'resolve-dispute', id: this.selectedId(), taskId, reportId, ...result },
       result.resolution === 'confirmed'
-        ? 'Entrega confirmada tras conversar.'
-        : 'Sin conclusión verificable: no se atribuye éxito ni fracaso externo.'
+        ? 'Actividad confirmada después de conversar.'
+        : 'Falta información. No se da la actividad por hecha ni por incumplida.'
     );
   }
   extension() {
@@ -324,7 +342,7 @@ export class LoansComponent {
     if (
       this.command(
         { type: 'extend', id: this.selectedId(), date: this.newDate },
-        'Ampliación propuesta. El plazo actual sigue vigente hasta que la acepte.'
+        'Nueva fecha propuesta. La fecha actual se mantiene hasta que tu hijo o hija acepte el cambio.'
       )
     )
       this.navigate('detail');
@@ -332,7 +350,9 @@ export class LoansComponent {
   acceptExtension(yes: boolean) {
     this.command(
       { type: 'accept-extension', id: this.selectedId(), accept: yes },
-      yes ? 'Nuevo plazo aceptado.' : 'Conservas el plazo vigente.'
+      yes
+        ? 'Nueva fecha aceptada. Ya aparece en tu calendario.'
+        : 'Se mantiene la fecha que ya habían acordado.'
     );
   }
   editPolicy() {
@@ -344,8 +364,8 @@ export class LoansComponent {
       this.command(
         { type: 'late-policy', id: this.selectedId(), policy: this.policy },
         this.policy.enabled
-          ? 'Propuesta enviada. Empezará al día siguiente de su aceptación, sin cobro retroactivo.'
-          : 'Unidades adicionales desactivadas.'
+          ? 'Propuesta enviada. Las actividades extra solo se sumarán desde el día siguiente de aceptarla.'
+          : 'Actividades extra pendientes retiradas.'
       )
     )
       this.navigate('detail');
@@ -357,15 +377,15 @@ export class LoansComponent {
         id: this.selectedId(),
         policy: { ...this.selected()!.latePolicy!, enabled: false },
       },
-      'Recargo desactivado. El retraso se conserva en el registro.'
+      'Se quitaron las actividades extra pendientes. El retraso sigue en el historial.'
     );
   }
   acceptPolicy(yes: boolean) {
     this.command(
       { type: 'accept-policy', id: this.selectedId(), accept: yes },
       yes
-        ? 'Condiciones aceptadas. Las nuevas unidades se cuentan desde mañana.'
-        : 'Conservas las condiciones anteriores.'
+        ? 'Aceptaste las actividades extra. Empezarán a sumarse mañana.'
+        : 'Se mantiene lo que ya habían acordado.'
     );
   }
 }

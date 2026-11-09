@@ -14,7 +14,7 @@ import { DreamArtComponent } from './dream-art.component';
             ? '¡Sueño cumplido!'
             : goal().protected
               ? 'Ahorro protegido'
-              : 'Meta flexible'
+              : 'Retiro libre'
         }}</span
       >
       <app-dream-art [kind]="goal().art" [label]="goal().name" />
@@ -53,7 +53,7 @@ import { DreamArtComponent } from './dream-art.component';
           completed(goal())
             ? goal().saved > 0
               ? 'Aún reservado para tu sueño: ' + money(goal().saved)
-              : 'Tu ahorro ya está disponible para usar. El logro es tuyo.'
+              : 'Este ahorro ya pasó a tu dinero disponible. Conservas tu logro.'
             : 'Te faltan ' + money(goal().target - goal().saved) + '. A tu ritmo, tú puedes.'
         }}
       </p>
@@ -64,9 +64,9 @@ import { DreamArtComponent } from './dream-art.component';
         <app-icon [name]="completed(goal()) ? 'trophy' : 'plus'" />{{
           completed(goal())
             ? goal().saved > 0
-              ? 'Celebrar mi logro'
+              ? 'Ver mi meta cumplida'
               : 'Ver mi logro'
-            : 'Agregar a mi sueño'
+            : 'Agregar ahorro'
         }}
       </button>
     </div>

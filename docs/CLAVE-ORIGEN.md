@@ -2,6 +2,8 @@
 
 Documento clave de triadTech. Investigación y decisiones del piloto, noviembre de 2026. ORIGEN identifica este informe; no es una certificación ni un protocolo bancario aprobado.
 
+Actualización editorial: la interfaz usa «veces» de una actividad, «aviso» y «sin información suficiente» en lugar de «unidades», «reporte» y «sin conclusión verificable». Las reglas descritas aquí se conservan; consultar la [guía de voz y lenguaje](VOZ-Y-LENGUAJE.md).
+
 ## Decisión del producto
 
 Mantener dos dimensiones: **cumplimiento familiar** y **calidad de evidencia**. No convertir tareas domésticas, declaraciones o recargos en historial crediticio. Un resultado confirmado por la familia conserva esa procedencia aunque sea legítimo. Ninguna técnica estudiada garantiza que una tarea doméstica ocurrió cuando todos sus declarantes colaboran para inventarla.

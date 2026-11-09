@@ -79,9 +79,9 @@
             <div class="empty-card">
               <app-dream-art kind="star" label="Tu primer sueño" />
               <h3>¿Qué te gustaría conseguir?</h3>
-              <p>Tú eliges el sueño. Le damos un plan juntos.</p>
+              <p>Crea una meta, elige el monto y empieza a ahorrar.</p>
               <button class="primary full" (click)="open('create')">
-                <app-icon name="plus" />Crear mi primer sueño
+                <app-icon name="plus" />Crear mi primera meta
               </button>
             </div>
           }
@@ -101,7 +101,7 @@
           }
           <div class="section-heading">
             <h2>Una idea para hoy</h2>
-            <span class="tiny-pill">2 MIN</span>
+            <span class="tiny-pill">ACTIVIDAD BREVE</span>
           </div>
           <button class="lesson-preview" (click)="startLesson(lessons[0])">
             <span class="feature-icon peach"><app-icon name="book" /></span>
@@ -138,7 +138,7 @@
                 }
               </div>
             } @empty {
-              <p class="muted">Tus pequeños pasos aparecerán aquí.</p>
+              <p class="muted">Aquí verás tus aportes y retiros cuando los hagas.</p>
             }
           </div>
         }
@@ -146,11 +146,11 @@
         @case ('suenos') {
           <div class="page-intro">
             <span class="eyebrow">TÚ PONES EL SUEÑO</span>
-            <h1>Hagamos que pase<span class="orange">.</span></h1>
-            <p>Un plan a tu medida. Un aporte a la vez.</p>
+            <h1>Tus metas de ahorro<span class="orange">.</span></h1>
+            <p>Elige qué quieres conseguir, cuánto cuesta y cuándo esperas lograrlo.</p>
           </div>
           <button class="primary full" (click)="open('create')">
-            <app-icon name="plus" />Crear un nuevo sueño
+            <app-icon name="plus" />Crear meta de ahorro
           </button>
           <div class="section-heading">
             <h2>En camino</h2>
@@ -176,7 +176,9 @@
                 <div class="empty-card">
                   <app-dream-art kind="star" label="Un mundo de posibilidades" />
                   <h3>Tu primer sueño empieza aquí</h3>
-                  <p>Puede ser una bicicleta, algo para tu hobby o una experiencia. Tú decides.</p>
+                  <p>
+                    Elige algo que quieras comprar o una experiencia para la que quieras ahorrar.
+                  </p>
                 </div>
               }
             }
@@ -221,21 +223,21 @@
             <div>
               <span>1</span>
               <div>
-                <strong>Tú eliges el compromiso</strong>
-                <p>Al crear una meta, decides si separar tu ahorro.</p>
+                <strong>Elige si necesitas autorización para retirar</strong>
+                <p>Al crear una meta, puedes activar el ahorro protegido.</p>
               </div>
             </div>
             <div>
               <span>2</span>
               <div>
-                <strong>Tu dinero tiene un propósito</strong>
+                <strong>El dinero se separa de tus gastos</strong>
                 <p>Los aportes salen de tu saldo disponible y se reservan para esa meta.</p>
               </div>
             </div>
             <div>
               <span>3</span>
               <div>
-                <strong>Hay espacio para imprevistos</strong>
+                <strong>Puedes pedir un retiro antes de terminar</strong>
                 <p>
                   Antes de llegar al 100%, puedes pedir un retiro con autorización de tu familia. Al
                   completar la meta, puedes usarlo.
@@ -263,13 +265,13 @@
             <div class="pending-notice">
               <app-icon name="clock" />
               <div>
-                <strong>Tu solicitud está en camino</strong>
+                <strong>Retiro pendiente de autorización</strong>
                 <p>
                   {{ money(r.amount) }} de {{ r.goalName }}. El dinero sigue reservado hasta que tu
                   familia autorice.
                 </p>
                 <button class="text-button" (click)="go('familia')">
-                  Ver en familia<app-icon name="arrow" />
+                  Ver solicitud de retiro<app-icon name="arrow" />
                 </button>
               </div>
             </div>
@@ -277,8 +279,8 @@
           <div class="info-card">
             <app-icon name="info" />
             <p>
-              Esta protección es una simulación educativa. No se bloquea dinero real ni existe
-              conexión con BCP o Yape.
+              Prueba cómo se separa el ahorro y cómo se pide un retiro. Todo el dinero de esta demo
+              es ficticio.
             </p>
           </div>
         }
@@ -321,13 +323,13 @@
                 <div class="row">
                   <span class="lesson-number">0{{ i + 1 }}</span
                   ><span class="tiny-pill">{{
-                    state.lessons.includes(l.id) ? 'COMPLETADO ✓' : '2 MIN · UNA DECISIÓN'
+                    state.lessons.includes(l.id) ? 'COMPLETADO ✓' : 'ACTIVIDAD BREVE'
                   }}</span>
                 </div>
                 <h3>{{ l.title }}</h3>
                 <p>{{ l.concept }}</p>
                 <span class="lesson-link"
-                  >{{ state.lessons.includes(l.id) ? 'Volver a explorar' : 'Empezar actividad'
+                  >{{ state.lessons.includes(l.id) ? 'Repetir actividad' : 'Empezar actividad'
                   }}<app-icon name="arrow"
                 /></span>
               </button>
@@ -362,7 +364,7 @@
             <span class="avatar">{{ store.family().parent.name[0] }}</span>
             <div>
               <strong>{{ store.family().parent.name }}</strong
-              ><small>Tu acompañante en esta aventura</small>
+              ><small>Tu familiar responsable</small>
             </div>
             <span class="tiny-pill green">EN FAMILIA</span>
           </div>
@@ -370,7 +372,7 @@
             <span class="feature-icon"><app-icon name="wallet" /></span>
             <div>
               <strong>Mis préstamos familiares</strong>
-              <p>Solicita un anticipo y revisa tus entregas en su propio espacio.</p>
+              <p>Pide dinero adelantado y consulta las actividades que acordaste hacer.</p>
             </div>
             <app-icon name="chevron" />
           </button>
@@ -389,16 +391,16 @@
                     ? 'Esperando respuesta'
                     : r.status === 'approved'
                       ? 'Autorizada'
-                      : 'Para conversar'
+                      : 'No autorizado'
                 }}</span
               >
               <h3>{{ money(r.amount) }} · {{ r.goalName }}</h3>
               <p>{{ r.reason }}</p>
               <small>{{
                 r.status === 'pending'
-                  ? 'El dinero sigue reservado mientras tu familia lo revisa.'
+                  ? 'El dinero sigue en tu meta hasta que tu familia autorice el retiro.'
                   : r.status === 'approved'
-                    ? 'El retiro fue devuelto a tu saldo disponible.'
+                    ? 'El dinero retirado ya está disponible para gastar.'
                     : 'Tu ahorro se mantiene reservado. Pueden conversar y volver a intentarlo.'
               }}</small>
             </div>
@@ -414,8 +416,8 @@
           <div class="info-card">
             <app-icon name="heart" />
             <p>
-              Tu familia puede conocer tus metas y aportes para acompañarte. Las decisiones adultas
-              se revisan desde su propia vista.
+              Tu familia puede ver tus metas y aportes. Desde la vista del adulto puede autorizar
+              retiros y responder a tus préstamos.
             </p>
           </div>
         }
@@ -446,7 +448,7 @@
                 <option [ngValue]="age">{{ age }} años</option>
               }
             </select>
-            <span class="field-label">Tu avatar</span>
+            <span class="field-label">Elige tu símbolo</span>
             <div class="avatar-choices">
               @for (a of ['A', '✦', '🦊', '🐱', '🐼', '🐸']; track a) {
                 <button
@@ -553,8 +555,8 @@
             <p class="sheet-description">
               {{
                 editingId
-                  ? 'Puedes adaptar tu plan. Cada cambio es una nueva decisión.'
-                  : 'Algo que te emocione. Un plan para conseguirlo.'
+                  ? 'Actualiza el nombre, el costo o el plazo de esta meta.'
+                  : 'Elige qué quieres conseguir y cuánto necesitas ahorrar.'
               }}
             </p>
             <form (ngSubmit)="saveGoal()">
@@ -572,7 +574,7 @@
                   </button>
                 }
               </div>
-              <label class="field-label" for="goal-name">Nombre de tu sueño</label
+              <label class="field-label" for="goal-name">Nombre de la meta</label
               ><input
                 id="goal-name"
                 name="name"
@@ -596,7 +598,8 @@
                   />
                 </div>
                 <div>
-                  <label class="field-label" for="goal-weeks">Plazo en semanas</label
+                  <label class="field-label" for="goal-weeks"
+                    >¿En cuántas semanas quieres conseguirlo?</label
                   ><input
                     id="goal-weeks"
                     name="weeks"
@@ -611,8 +614,9 @@
               </div>
               <div class="suggestion">
                 <app-icon name="clock" /><span
-                  >Un plan posible: <strong>{{ money(weeklySuggestion) }} por semana.</strong> Es
-                  una guía, no una obligación.</span
+                  >Ahorro semanal sugerido:
+                  <strong>{{ money(weeklySuggestion) }} por semana.</strong> Es una guía, no una
+                  obligación.</span
                 >
               </div>
               <label class="protect-toggle" for="goal-protect"
@@ -660,7 +664,7 @@
                       ? 'Este logro ya es parte de tu historia'
                       : g.protected
                         ? 'Tu compromiso de ahorro'
-                        : 'Una meta flexible'
+                        : 'Puedes retirar sin autorización'
                   }}</strong>
                   <p>
                     {{
@@ -685,7 +689,7 @@
                   durante {{ g.weeks }} semanas desde hoy.
                 </div>
                 <button class="primary full" (click)="open('deposit', g)">
-                  <app-icon name="plus" />Agregar a mi sueño
+                  <app-icon name="plus" />Agregar ahorro
                 </button>
               } @else {
                 <div class="completed-funds">
@@ -711,7 +715,7 @@
               </button>
               @if (!completed(g)) {
                 <button class="text-button centered" (click)="editGoal(g)">
-                  <app-icon name="edit" />Modificar mi meta</button
+                  <app-icon name="edit" />Editar mi meta</button
                 ><button class="text-button centered muted" (click)="open('cancel', g)">
                   Cerrar esta meta
                 </button>
@@ -735,7 +739,7 @@
                   completed(g)
                     ? 'Alcanzaste tu meta. Tu dinero está listo para ese sueño.'
                     : g.protected
-                      ? 'Los imprevistos pasan. Tu familia puede ayudarte a ajustar el plan.'
+                      ? 'Los imprevistos pasan. Puedes explicar el motivo del retiro a tu familia y ajustar el plan juntos.'
                       : 'Puedes ajustar tu ahorro cuando lo necesites.'
                 }}
               </p>
@@ -821,7 +825,9 @@
             @if (answered) {
               <div class="quiz-feedback" [class.try-again]="choice !== lesson.answer">
                 <strong>{{
-                  choice === lesson.answer ? '¡Una buena decisión!' : 'Exploremos esa decisión.'
+                  choice === lesson.answer
+                    ? '¡Una buena decisión!'
+                    : 'Puedes probar otra respuesta.'
                 }}</strong>
                 <p>
                   {{
@@ -839,7 +845,7 @@
               </button>
             } @else {
               <button class="primary full" [disabled]="choice < 0" (click)="answer()">
-                Explorar mi respuesta<app-icon name="arrow" />
+                Ver explicación<app-icon name="arrow" />
               </button>
             }
           }
@@ -878,13 +884,13 @@
           }
           @case ('summary') {
             <span class="pill green">RESUMEN DE ESTA DEMO</span>
-            <h3 class="quiz-title">Cada paso de {{ state.profile.name }} cuenta.</h3>
+            <h3 class="quiz-title">Resumen de {{ state.profile.name }}</h3>
             <p class="sheet-description">
-              Una mirada a los avances registrados, para conversar en familia.
+              Consulta el dinero ahorrado, los aportes y las metas completadas.
             </p>
             <div class="summary-grid">
               <div>
-                <small>En sus metas</small><strong>{{ money(store.saved()) }}</strong>
+                <small>Ahorrado en sus metas</small><strong>{{ money(store.saved()) }}</strong>
               </div>
               <div>
                 <small>Aportes registrados</small><strong>{{ money(monthlyContributions) }}</strong>
@@ -893,7 +899,7 @@
                 <small>Metas alcanzadas</small><strong>{{ store.completedGoals().length }}</strong>
               </div>
               <div>
-                <small>Actividades aprendidas</small><strong>{{ state.lessons.length }}</strong>
+                <small>Actividades completadas</small><strong>{{ state.lessons.length }}</strong>
               </div>
             </div>
             <p class="summary-note">
@@ -901,7 +907,7 @@
               te acompañe?”
             </p>
             <button class="primary full" (click)="close()">
-              Seguir acompañando<app-icon name="heart" />
+              Cerrar resumen<app-icon name="heart" />
             </button>
           }
           @case ('cancel') {
@@ -947,9 +953,9 @@
 <ng-template #depositForm>
   @if (modal() === 'family-deposit') {
     <p class="sheet-description">
-      Un aporte voluntario para reconocer su esfuerzo. Sin condiciones ni presión.
+      Este aporte es un regalo para su meta. No crea un préstamo ni exige actividades a cambio.
     </p>
-    <label class="field-label" for="family-goal">Elige qué sueño acompañar</label
+    <label class="field-label" for="family-goal">Elige la meta que recibirá el aporte</label
     ><select id="family-goal" [(ngModel)]="selectedId" (ngModelChange)="adjustFamilyAmount()">
       @for (g of state.goals; track g.id) {
         @if (!completed(g)) {
@@ -1006,7 +1012,7 @@
         <app-icon [name]="g.protected ? 'shield' : 'star'" /><span>{{
           g.protected
             ? 'Este aporte estará separado de tu saldo para gastos diarios.'
-            : 'Este aporte se sumará a tu meta flexible.'
+            : 'Este aporte se sumará a tu meta con retiro libre.'
         }}</span>
       </div>
       @if (error) {
@@ -1017,7 +1023,7 @@
         type="submit"
         [disabled]="completed(g) || (modal() === 'deposit' && state.balance <= 0)"
       >
-        {{ modal() === 'deposit' ? 'Guardar para mi sueño' : 'Confirmar aporte familiar'
+        {{ modal() === 'deposit' ? 'Confirmar ahorro' : 'Confirmar aporte familiar'
         }}<app-icon name="arrow" />
       </button>
     </form>

@@ -24,20 +24,23 @@
           <section class="parent-hero">
             <span class="eyebrow">ACOMPAÑAR ES ESTAR CERCA</span>
             <h1>Sus sueños.<br />Tu compañía.</h1>
-            <p>Hola, {{ store.family().parent.name }}. Así va el camino de tu familia.</p>
+            <p>
+              Hola, {{ store.family().parent.name }}. Consulta el dinero, las metas y los acuerdos
+              de tus hijos.
+            </p>
             <app-icon name="heart" />
           </section>
           <div class="parent-summary-grid">
             <div>
-              <small>En sus sueños</small><strong>{{ money(totalSaved()) }}</strong>
+              <small>Ahorrado en sus metas</small><strong>{{ money(totalSaved()) }}</strong>
             </div>
             <div>
-              <small>Fondo para anticipos</small
+              <small>Para prestar en familia</small
               ><strong>{{ money(store.family().parent.balance) }}</strong>
             </div>
           </div>
           <div class="section-heading">
-            <h2>Una mirada a cada hijo</h2>
+            <h2>Dinero y metas de tus hijos</h2>
             <button class="text-button" (click)="go('children')">
               Ver familia<app-icon name="chevron" />
             </button>
@@ -48,7 +51,10 @@
                 <span class="avatar">{{ c.profile.name[0] }}</span>
                 <div class="child-card-name">
                   <strong>{{ c.profile.name }}</strong
-                  ><small>{{ c.profile.age }} años · {{ c.goals.length }} sueños</small>
+                  ><small
+                    >{{ c.profile.age }} años · {{ c.goals.length }}
+                    {{ c.goals.length === 1 ? 'meta' : 'metas' }}</small
+                  >
                 </div>
                 <app-icon name="chevron" />
               </div>
@@ -61,13 +67,16 @@
               </div>
               @if (store.metrics(c.id); as m) {
                 <div class="observed-rate">
-                  <span>Acuerdos base en plazo</span
+                  <span>Préstamos completados a tiempo</span
                   ><strong>{{
-                    m.onTimeRate === null ? 'Sin historial' : m.onTimeRate + '% observado'
+                    m.onTimeRate === null
+                      ? 'Aún sin préstamos completados'
+                      : m.onTimeRate + '% observado'
                   }}</strong>
                 </div>
                 <small class="metrics-denominator"
-                  >{{ m.onTime }} de {{ m.completed }} completados · {{ m.overdue }} en mora</small
+                  >A tiempo: {{ m.onTime }} de {{ m.completed }} · {{ m.overdue }} con
+                  retraso</small
                 >
               }
             </button>
@@ -84,7 +93,7 @@
                 <p class="request-reason">“{{ item.request.reason }}”</p>
                 <div class="row">
                   <button class="secondary" (click)="resolve(item.childId, item.request.id, false)">
-                    Conversar primero</button
+                    No autorizar retiro</button
                   ><button class="primary" (click)="resolve(item.childId, item.request.id, true)">
                     Autorizar retiro
                   </button>
@@ -102,7 +111,7 @@
                     a.status === 'requested'
                       ? 'Solicitud por revisar'
                       : a.status === 'offered'
-                        ? 'Esperando aceptación'
+                        ? 'Propuesta por aceptar'
                         : 'Entrega vencida: conversen el siguiente paso'
                   }}</small></span
                 ><app-icon name="chevron" />
@@ -112,16 +121,18 @@
           <div class="info-card">
             <app-icon name="info" />
             <p>
-              Las métricas describen acuerdos familiares de esta demo. No son un score bancario ni
-              predicen el próximo cumplimiento.
+              Estos datos resumen acuerdos familiares anteriores. No son una calificación bancaria
+              ni predicen qué pasará después.
             </p>
           </div>
         }
         @case ('children') {
           <div class="page-intro">
             <span class="eyebrow">CADA CAMINO ES DISTINTO</span>
-            <h1>Conoce sus planes.</h1>
-            <p>Metas, dinero disponible y acuerdos. Sin comparar su valor como personas.</p>
+            <h1>Las metas de tus hijos.</h1>
+            <p>
+              Abre un perfil para ver sus metas de ahorro, su dinero y sus préstamos familiares.
+            </p>
           </div>
           <button class="primary full" (click)="add()">
             <app-icon name="plus" />Añadir hijo o hija
@@ -140,12 +151,12 @@
                 <span
                   >Disponible <b>{{ money(c.balance) }}</b></span
                 ><span
-                  >En sus metas <b>{{ money(saved(c)) }}</b></span
+                  >Ahorrado en sus metas <b>{{ money(saved(c)) }}</b></span
                 >
               </div>
               <p>
-                {{ store.plan(c.id).count }} metas en camino ·
-                {{ store.metrics(c.id)?.completed }} préstamos cumplidos
+                Metas en curso: {{ store.plan(c.id).count }} · Préstamos completados:
+                {{ store.metrics(c.id)?.completed }}
               </p>
             </button>
           }
@@ -156,14 +167,14 @@
             <span class="avatar large">{{ child().profile.name[0] }}</span>
             <h1>{{ child().profile.name }}</h1>
             <p>{{ child().profile.age }} años · {{ child().profile.interest }}</p>
-            <span class="tiny-pill">SIGUES EN LA VISTA ADULTA</span>
+            <span class="tiny-pill">DETALLE PARA MADRE, PADRE O TUTOR</span>
           </div>
           <div class="parent-summary-grid">
             <div>
               <small>Disponible para gastar</small><strong>{{ money(child().balance) }}</strong>
             </div>
             <div>
-              <small>Reservado en sueños</small><strong>{{ money(saved(child())) }}</strong>
+              <small>Ahorrado en sus metas</small><strong>{{ money(saved(child())) }}</strong>
             </div>
           </div>
           <div class="family-actions">
@@ -179,7 +190,9 @@
           </div>
           <div class="section-heading">
             <h2>Todos sus sueños</h2>
-            <span class="tiny-pill">{{ child().goals.length }} METAS</span>
+            <span class="tiny-pill"
+              >{{ child().goals.length }} {{ child().goals.length === 1 ? 'META' : 'METAS' }}</span
+            >
           </div>
           @for (g of child().goals; track g.id) {
             <button class="parent-goal" (click)="goal(g)">
@@ -200,7 +213,7 @@
           }
           <section class="plan-feedback" [class.amber]="store.plan(child().id).exceeds">
             <div class="row">
-              <h3>¿Es un plan sostenible?</h3>
+              <h3>¿Cuánto necesita ahorrar por semana?</h3>
               <app-icon name="book" />
             </div>
             <p>{{ store.plan(child().id).message }}</p>
@@ -215,19 +228,20 @@
               [ngModel]="child().weeklySavingsBudget"
               (change)="store.setWeeklyBudget(child().id, +$any($event.target).value)"
             /><small
-              >Es una referencia familiar, no un ingreso garantizado ni una calificación.</small
+              >Acuerden una cantidad que puedan mantener. Puedes cambiarla cuando lo
+              necesiten.</small
             >
           </section>
           @if (store.metrics(child().id); as m) {
             <div class="section-heading">
-              <h2>Cumplimiento observado</h2>
+              <h2>Puntualidad de sus avisos</h2>
               <span class="tiny-pill">SOLO VISTA ADULTA</span>
             </div>
             <div class="parent-metrics">
               <div class="metric-primary">
                 <strong>{{ m.onTimeRate === null ? '—' : m.onTimeRate + '%' }}</strong
-                ><span>con reportes base confirmados dentro de plazo</span
-                ><small>{{ m.onTime }} de {{ m.completed }} acuerdos · plazos vigentes</small>
+                ><span>de préstamos completados con avisos a tiempo</span
+                ><small>A tiempo: {{ m.onTime }} de {{ m.completed }} · fechas acordadas</small>
               </div>
               <div class="metrics-grid">
                 <div>
@@ -239,22 +253,24 @@
                   ><span>Con retraso</span>
                 </div>
                 <div>
-                  <strong>{{ m.averageLateDays }} d</strong><span>Retraso medio si lo hubo</span>
+                  <strong>{{ m.averageLateDays }} d</strong
+                  ><span>Días de retraso, en promedio</span>
                 </div>
                 <div>
-                  <strong>{{ m.averageEarlyDays }} d</strong><span>Adelanto medio si lo hubo</span>
+                  <strong>{{ m.averageEarlyDays }} d</strong
+                  ><span>Días de adelanto, en promedio</span>
                 </div>
                 <div>
                   <strong>{{ m.overdue }}</strong
-                  ><span>Préstamos en mora</span>
+                  ><span>Préstamos con retraso</span>
                 </div>
                 <div>
                   <strong>{{ m.everOverdue }}</strong
-                  ><span>Con mora registrada alguna vez</span>
+                  ><span>Con algún retraso registrado</span>
                 </div>
                 <div>
                   <strong>{{ m.awaitingReview }}</strong
-                  ><span>Entregas por revisar</span>
+                  ><span>Avisos que debes revisar</span>
                 </div>
               </div>
               <p>
@@ -263,12 +279,22 @@
                     ? 'Hay pocos acuerdos: evita sacar conclusiones sobre próximos préstamos.'
                     : 'Estos datos describen el pasado, no garantizan el próximo resultado.'
                 }}
-                {{ m.renegotiations }} ampliaciones aceptadas. Los retrasos registrados no se borran
-                al ampliar el plazo. La puntualidad usa la fecha del reporte, no la fecha declarada
-                de la actividad. Son declaraciones familiares, no verificaciones independientes ni
-                un historial crediticio. Los reportes sin revisión no se cuentan como acuerdos
-                completados.
               </p>
+              <details class="evidence-guide">
+                <summary>¿Cómo se calcula este porcentaje?</summary>
+                <p>
+                  Préstamos completados: {{ m.completed }}. Con todos los avisos a tiempo:
+                  {{ m.onTime }}. Las actividades extra no cambian este cálculo.
+                </p>
+                <p>
+                  Se usa el día en que el hijo envió el aviso, no el día en que el adulto respondió.
+                  Los préstamos todavía pendientes no entran en este porcentaje.
+                </p>
+                <p>
+                  Cambios de fecha aceptados: {{ m.renegotiations }}. Cambiar una fecha no borra los
+                  retrasos ya registrados. Es un resumen familiar, no un historial crediticio.
+                </p>
+              </details>
             </div>
           }
           <button class="primary full form-submit" (click)="go('agreements')">
@@ -290,7 +316,7 @@
                 }
               </div>
             } @empty {
-              <p class="muted">Sus próximos pasos aparecerán aquí.</p>
+              <p class="muted">Aquí aparecerán sus aportes, retiros y logros.</p>
             }
           </div>
           @for (r of child().requests; track r.id) {
@@ -301,7 +327,7 @@
                 <p>{{ r.goalName }} · {{ r.reason }}</p>
                 <div class="row">
                   <button class="secondary" (click)="resolve(child().id, r.id, false)">
-                    Conversar primero</button
+                    No autorizar retiro</button
                   ><button class="primary" (click)="resolve(child().id, r.id, true)">
                     Autorizar retiro
                   </button>
@@ -326,7 +352,7 @@
           <div class="page-intro">
             <span class="eyebrow">EL CAMINO DE TU FAMILIA</span>
             <h1>Cada paso cuenta.</h1>
-            <p>Los movimientos mantienen el nombre de su protagonista.</p>
+            <p>Consulta los aportes, retiros y logros de cada hijo.</p>
           </div>
           <div class="activity-list">
             @for (h of history(); track $index) {
@@ -376,10 +402,10 @@
     <app-action-sheet
       [title]="
         sheet() === 'add'
-          ? 'Un nuevo camino en familia'
+          ? 'Añadir un hijo o hija'
           : sheet() === 'goal'
-            ? 'Su meta, desde tu vista'
-            : 'Acompañar a ' + dialogChild?.profile?.name
+            ? 'Detalle de su meta de ahorro'
+            : 'Aportar a la meta de ' + dialogChild?.profile?.name
       "
       (closed)="sheet.set('')"
     >
@@ -419,8 +445,8 @@
         }
         @case ('contribute') {
           <p class="sheet-description">
-            Este aporte voluntario va a una meta de {{ dialogChild?.profile?.name }}. No crea un
-            préstamo ni condiciones de devolución.
+            El dinero se añade directamente a una meta de {{ dialogChild?.profile?.name }}. Es un
+            aporte voluntario: no tiene que devolverse.
           </p>
           <form (ngSubmit)="sendContribution()">
             <label class="field-label" for="parent-contribution-goal"
@@ -450,7 +476,8 @@
         @case ('goal') {
           @if (selectedGoal; as g) {
             <span class="pill"
-              >{{ dialogChild?.profile?.name }} · {{ g.protected ? 'Protegida' : 'Flexible' }}</span
+              >{{ dialogChild?.profile?.name }} ·
+              {{ g.protected ? 'Protegida' : 'Retiro libre' }}</span
             >
             <h3 class="quiz-title">{{ g.name }}</h3>
             <div class="detail-amount">
@@ -470,8 +497,8 @@
             <div class="info-card">
               <app-icon name="heart" />
               <p>
-                {{ dialogChild?.profile?.name }} conserva el protagonismo de sus metas. Puedes
-                conversar, aportar y acompañar desde esta vista.
+                {{ dialogChild?.profile?.name }} elige sus propias metas. Aquí puedes ver los
+                detalles, aportar dinero y conversar sobre el plan.
               </p>
             </div>
           }

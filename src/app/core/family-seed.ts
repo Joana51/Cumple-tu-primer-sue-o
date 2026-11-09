@@ -57,7 +57,7 @@ export function familySeed(first: DemoState, today = localToday()): FamilyState 
       parentId: 'mariana',
       title,
       amount: [20, 15, 30, 10][index % 4],
-      reason: 'Un anticipo para mis planes',
+      reason: 'Dinero adelantado para mi meta',
       terms: 'Una actividad breve acordada en familia.',
       status: 'completed',
       days: 7,
@@ -143,7 +143,7 @@ export function familySeed(first: DemoState, today = localToday()): FamilyState 
         id: 'lucia-seed-event',
         at: addDays(today, -10),
         actor: 'child',
-        text: 'Acuerdo aceptado. Anticipo recibido.',
+        text: 'Acuerdo aceptado. Dinero recibido.',
       },
     ],
   });

@@ -13,7 +13,7 @@ const lessons: Record<string, Lesson[]> = {
       id: 'j1',
       title: 'Un poquito hoy, un sueño mañana',
       concept: 'Ahorrar es guardar una parte para algo que quieres conseguir después.',
-      question: 'Recibes S/ 20 y quieres una bicicleta. ¿Qué te ayuda a acercarte a ella?',
+      question: 'Recibes S/ 20 y quieres ahorrar para una bicicleta. ¿Qué podrías hacer?',
       choices: [
         'Gastar los S/ 20 en dulces',
         'Guardar S/ 5 y decidir qué hacer con el resto',
@@ -53,7 +53,7 @@ const lessons: Record<string, Lesson[]> = {
       ],
       answer: 1,
       explanation:
-        'Un presupuesto contempla tus necesidades y tu meta. Separar primero lo necesario hace tu plan sostenible.',
+        'Un presupuesto incluye tus gastos necesarios y tus metas. Separa primero lo que necesitas para transporte y decide cuánto puedes ahorrar.',
     },
     {
       id: 'e2',
@@ -92,12 +92,12 @@ const lessons: Record<string, Lesson[]> = {
       id: 't2',
       title: 'El costo de elegir',
       concept:
-        'El costo de oportunidad es aquello a lo que renuncias cuando eliges una alternativa.',
+        'El costo de oportunidad es lo que dejas de elegir cuando tomas una decisión. Por ejemplo, gastar hoy puede retrasar una meta de ahorro.',
       question:
         'Usas S/ 60 de tu ahorro para una salida. Con aportes de S/ 20 por semana, ¿qué implica para tu meta?',
       choices: [
         'Necesitaré aproximadamente 3 semanas adicionales',
-        'La meta se completará igual de rápido',
+        'Llegaré a mi meta igual de rápido',
         'Nunca podré alcanzar mi objetivo',
       ],
       answer: 0,

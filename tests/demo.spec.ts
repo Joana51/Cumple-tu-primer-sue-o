@@ -23,9 +23,9 @@ test.beforeEach(async ({ page }) => {
 test('aportar, proteger el saldo, solicitar y autorizar un retiro; persiste al recargar', async ({
   page,
 }) => {
-  await page.getByRole('button', { name: 'Agregar a mi sueño', exact: true }).click();
+  await page.getByRole('button', { name: 'Agregar ahorro', exact: true }).click();
   await page.getByLabel('¿Cuánto quieres guardar? (S/)').fill('25.50');
-  await page.getByRole('button', { name: 'Guardar para mi sueño', exact: true }).click();
+  await page.getByRole('button', { name: 'Confirmar ahorro', exact: true }).click();
   let s = await state(page);
   expect(s.balance).toBe(139.5);
   expect(s.goals[0].saved).toBe(205.5);
@@ -55,28 +55,28 @@ test('crear y modificar una meta, rechazar el exceso de saldo y aportar desde fa
   page,
 }) => {
   await nav(page, 'Sueños');
-  await page.getByRole('button', { name: 'Crear un nuevo sueño' }).click();
+  await page.getByRole('button', { name: 'Crear meta de ahorro' }).click();
   await page.getByRole('button', { name: 'Bicicleta', exact: true }).click();
-  await page.getByLabel('Nombre de tu sueño').fill('Mi bicicleta');
+  await page.getByLabel('Nombre de la meta').fill('Mi bicicleta');
   await page.getByLabel('¿Cuánto cuesta? (S/)').fill('300');
-  await page.getByLabel('Plazo en semanas').fill('10');
+  await page.getByLabel('¿En cuántas semanas quieres conseguirlo?').fill('10');
   await expect(page.locator('.suggestion')).toContainText('S/ 30.00 por semana');
   await page.getByRole('button', { name: 'Empezar mi sueño', exact: true }).click();
   await page.getByRole('button', { name: 'Ver detalle de Mi bicicleta' }).click();
-  await page.getByRole('button', { name: 'Modificar mi meta' }).click();
+  await page.getByRole('button', { name: 'Editar mi meta' }).click();
   await page.getByLabel('¿Cuánto cuesta? (S/)').fill('350');
   await page.getByRole('button', { name: 'Actualizar mi plan' }).click();
   expect((await state(page)).goals[1].target).toBe(350);
-  await page.getByRole('button', { name: 'Agregar a mi sueño', exact: true }).last().click();
+  await page.getByRole('button', { name: 'Agregar ahorro', exact: true }).last().click();
   await page.getByLabel('¿Cuánto quieres guardar? (S/)').fill('999');
-  await page.getByRole('button', { name: 'Guardar para mi sueño', exact: true }).click();
+  await page.getByRole('button', { name: 'Confirmar ahorro', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
   expect((await state(page)).balance).toBe(165);
   await page.keyboard.press('Escape');
   await adult(page);
   await page.locator('.parent-child-card').filter({ hasText: 'Alex' }).click();
   await page.getByRole('button', { name: 'Aportar a una meta', exact: true }).click();
-  await page.getByLabel('Meta de Alex').selectOption({ label: 'Mi bicicleta' });
+  await page.getByLabel('Meta de Alex', { exact: true }).selectOption({ label: 'Mi bicicleta' });
   await page.getByLabel('Aporte voluntario (S/)').fill('10');
   await page.getByRole('button', { name: 'Confirmar aporte a Alex' }).click();
   expect((await state(page)).goals[1].saved).toBe(10);
@@ -86,18 +86,18 @@ test('crear y modificar una meta, rechazar el exceso de saldo y aportar desde fa
 test('edad adapta estilo, contenido y actividad; contestar no cierra la actividad', async ({
   page,
 }) => {
-  await page.getByLabel('Edad del usuario').fill('10');
+  await page.getByLabel('Edad del hijo o hija').fill('10');
   await nav(page, 'Aprende');
   await expect(page.locator('.mobile-app')).toHaveAttribute('data-age', 'junior');
   await expect(page.locator('.learning-hero')).toContainText('¡Vamos a descubrir!');
   await page.locator('.learning-card').first().click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.getByRole('button', { name: 'B Guardar S/ 5' }).click();
-  await page.getByRole('button', { name: 'Explorar mi respuesta' }).click();
+  await page.getByRole('button', { name: 'Ver explicación' }).click();
   await expect(page.locator('.quiz-feedback')).toContainText('¡Una buena decisión!');
   expect((await state(page)).lessons).toContain('j1');
   await page.getByRole('button', { name: 'Seguir mi camino' }).click();
-  await page.getByLabel('Edad del usuario').fill('17');
+  await page.getByLabel('Edad del hijo o hija').fill('17');
   await expect(page.locator('.mobile-app')).toHaveAttribute('data-age', 'teen');
   await expect(page.locator('.learning-card').first()).toContainText('Presupuesto con intención');
 });
@@ -105,12 +105,12 @@ test('edad adapta estilo, contenido y actividad; contestar no cierra la activida
 test('escenarios requieren confirmación y permiten completar y liberar el ahorro', async ({
   page,
 }) => {
-  await page.getByRole('button', { name: 'Escenarios', exact: true }).click();
+  await page.getByRole('button', { name: 'Historias para probar', exact: true }).click();
   await page.getByRole('button', { name: '¡Lo logré!' }).click();
-  await expect(page.getByRole('button', { name: 'Cargar escenario' })).toBeVisible();
-  await page.getByRole('button', { name: 'Cargar escenario' }).click();
+  await expect(page.getByRole('button', { name: 'Reiniciar con esta historia' })).toBeVisible();
+  await page.getByRole('button', { name: 'Reiniciar con esta historia' }).click();
   await expect(page.locator('.goal-visual')).toContainText('¡Sueño cumplido!');
-  await page.getByRole('button', { name: 'Celebrar mi logro' }).click();
+  await page.getByRole('button', { name: 'Ver mi meta cumplida' }).click();
   await page.getByRole('button', { name: 'Usar mi ahorro para este sueño' }).click();
   await page.getByLabel('Monto a retirar (S/)').fill('600');
   await page.getByRole('button', { name: 'Devolver a mi saldo disponible' }).click();
@@ -126,16 +126,14 @@ test('diálogo encierra el foco, Escape lo devuelve y no hay errores de ejecuci�
 }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.getByRole('button', { name: 'Agregar a mi sueño', exact: true }).click();
+  await page.getByRole('button', { name: 'Agregar ahorro', exact: true }).click();
   await expect(page.getByRole('dialog')).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.getByRole('button', { name: 'Cerrar ventana' })).toBeFocused();
   await page.keyboard.press('Shift+Tab');
-  await expect(
-    page.getByRole('button', { name: 'Guardar para mi sueño', exact: true })
-  ).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Confirmar ahorro', exact: true })).toBeFocused();
   await page.keyboard.press('Escape');
-  await expect(page.getByRole('button', { name: 'Agregar a mi sueño', exact: true })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Agregar ahorro', exact: true })).toBeFocused();
   for (const label of ['Sueños', 'Protegido', 'Aprende', 'Familia', 'Inicio'])
     await nav(page, label);
   expect(errors).toEqual([]);
@@ -188,7 +186,7 @@ test('migra datos previos sin borrar la copia original', async ({ page }) => {
   await page.reload();
   await expect(page.locator('.mobile-header')).toContainText('Luz');
   await expect(page.locator('.goal-card')).toContainText('Mi guitarra');
-  await page.getByLabel('Edad del usuario').fill('13');
+  await page.getByLabel('Edad del hijo o hija').fill('13');
   expect((await state(page)).goals[0].saved).toBe(60);
   expect(
     await page.evaluate(() => JSON.parse(localStorage.getItem('primer-sueno-demo-v2')!).balance)
@@ -199,7 +197,7 @@ test('editar no evade la protección y conversar primero mantiene intactos los f
   page,
 }) => {
   await page.getByRole('button', { name: 'Ver detalle de Mi primera tablet' }).click();
-  await page.getByRole('button', { name: 'Modificar mi meta' }).click();
+  await page.getByRole('button', { name: 'Editar mi meta' }).click();
   await expect(page.getByLabel('Proteger mi ahorro')).toBeDisabled();
   await page.getByLabel('¿Cuánto cuesta? (S/)').fill('180');
   await page.getByRole('button', { name: 'Actualizar mi plan' }).click();
@@ -212,7 +210,7 @@ test('editar no evade la protección y conversar primero mantiene intactos los f
   await page.getByRole('button', { name: 'Enviar solicitud a mi familia' }).click();
   await nav(page, 'Familia');
   await adult(page);
-  await page.getByRole('button', { name: 'Conversar primero' }).click();
+  await page.getByRole('button', { name: 'No autorizar retiro' }).click();
   const s = await state(page);
   expect(s.balance).toBe(165);
   expect(s.goals[0].saved).toBe(180);
@@ -231,7 +229,7 @@ test('identidad independiente y aviso visibles en presentación, formularios y m
   await expect(page.locator('.panel-footer')).not.toContainText('Integración');
   await page.getByRole('button', { name: 'Modo presentación', exact: true }).click();
   await expect(notice).toBeInViewport();
-  await page.getByRole('button', { name: 'Agregar a mi sueño', exact: true }).click();
+  await page.getByRole('button', { name: 'Agregar ahorro', exact: true }).click();
   await expect(notice).toBeInViewport();
   let noticeBox = await notice.boundingBox();
   let dialogBox = await page.getByRole('dialog').boundingBox();
@@ -240,7 +238,7 @@ test('identidad independiente y aviso visibles en presentación, formularios y m
   await page.getByRole('button', { name: 'Salir de presentación' }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(notice).toBeInViewport();
-  await page.getByRole('button', { name: 'Agregar a mi sueño', exact: true }).click();
+  await page.getByRole('button', { name: 'Agregar ahorro', exact: true }).click();
   noticeBox = await notice.boundingBox();
   dialogBox = await page.getByRole('dialog').boundingBox();
   expect(noticeBox!.y + noticeBox!.height).toBeLessThanOrEqual(dialogBox!.y);
@@ -251,13 +249,13 @@ test('la meta y sus insignias permanecen cumplidas tras usar todo el ahorro y re
 }) => {
   await page.locator('#demo-balance').fill('420');
   await page.locator('#demo-balance').press('Tab');
-  await page.getByRole('button', { name: 'Agregar a mi sueño', exact: true }).click();
+  await page.getByRole('button', { name: 'Agregar ahorro', exact: true }).click();
   await page.getByLabel('¿Cuánto quieres guardar? (S/)').fill('420');
-  await page.getByRole('button', { name: 'Guardar para mi sueño', exact: true }).click();
+  await page.getByRole('button', { name: 'Confirmar ahorro', exact: true }).click();
   const completedAt = (await state(page)).goals[0].completedAt;
   expect(completedAt).toBeTruthy();
   for (const amount of [200, 400]) {
-    await page.getByRole('button', { name: 'Celebrar mi logro' }).click();
+    await page.getByRole('button', { name: 'Ver mi meta cumplida' }).click();
     await page.getByRole('button', { name: 'Usar mi ahorro para este sueño' }).click();
     await expect(page.getByLabel('¿Para qué necesitas este dinero?')).toHaveCount(0);
     await page.getByLabel('Monto a retirar (S/)').fill(String(amount));
@@ -276,14 +274,12 @@ test('la meta y sus insignias permanecen cumplidas tras usar todo el ahorro y re
     'aria-valuenow',
     '100'
   );
-  await expect(page.getByRole('button', { name: 'Agregar a mi sueño', exact: true })).toHaveCount(
-    0
-  );
+  await expect(page.getByRole('button', { name: 'Agregar ahorro', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Ver mi logro' }).click();
-  await expect(page.getByRole('button', { name: 'Modificar mi meta' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Editar mi meta' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Cerrar esta meta', exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Crear mi próximo sueño' }).click();
-  await page.getByLabel('Nombre de tu sueño').fill('Mi primera tablet');
+  await page.getByLabel('Nombre de la meta').fill('Mi primera tablet');
   await page.getByLabel('¿Cuánto cuesta? (S/)').fill('50');
   await page.getByRole('button', { name: 'Empezar mi sueño', exact: true }).click();
   await page.reload();
@@ -298,7 +294,7 @@ test('la meta y sus insignias permanecen cumplidas tras usar todo el ahorro y re
   await expect(page.locator('.badge-card').filter({ hasText: 'Un sueño cumplido' })).toHaveClass(
     /earned/
   );
-  await expect(page.locator('.badge-card').filter({ hasText: 'Un paso de ahorro' })).toHaveClass(
+  await expect(page.locator('.badge-card').filter({ hasText: 'Mi primer ahorro' })).toHaveClass(
     /earned/
   );
   await adult(page);
@@ -318,7 +314,7 @@ test('una sesión previa sin hitos se migra y conserva su meta cumplida al retir
     localStorage.setItem(k, JSON.stringify(saved));
   }, key);
   await page.reload();
-  await page.getByRole('button', { name: 'Celebrar mi logro' }).click();
+  await page.getByRole('button', { name: 'Ver mi meta cumplida' }).click();
   await page.getByRole('button', { name: 'Usar mi ahorro para este sueño' }).click();
   await page.getByLabel('Monto a retirar (S/)').fill('600');
   await page.getByRole('button', { name: 'Devolver a mi saldo disponible' }).click();
@@ -338,10 +334,10 @@ test('Inicio muestra progreso y aporte sin desplazarse en las tres edades', asyn
     for (const age of [10, 14, 17]) {
       if (size.width <= 650)
         await page.getByRole('button', { name: 'Abrir controles de demo' }).click();
-      await page.getByLabel('Edad del usuario').fill(String(age));
+      await page.getByLabel('Edad del hijo o hija').fill(String(age));
       if (size.width <= 650) await page.getByRole('button', { name: 'Cerrar controles' }).click();
       await expect(
-        page.getByRole('button', { name: 'Agregar a mi sueño', exact: true })
+        page.getByRole('button', { name: 'Agregar ahorro', exact: true })
       ).toBeInViewport({ ratio: 1 });
       await expect(page.locator('.goal-card [role="progressbar"]')).toBeInViewport({ ratio: 1 });
       expect(await page.locator('.mobile-scroll').evaluate((e) => e.scrollTop)).toBe(0);

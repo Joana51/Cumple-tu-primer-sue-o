@@ -1014,6 +1014,15 @@ app-loans {
   max-width: 100%;
   box-sizing: border-box;
 }
+.mobile-app .suggestion {
+  color: #425b7a;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.loan-contract > p {
+  color: #435d80;
+  font-size: 12px;
+}
 @media (max-width: 650px) {
   .presentation-roles {
     top: auto;

@@ -106,9 +106,9 @@ export const penaltyDeadline = (a: Agreement) =>
     : undefined;
 export function agreementStatus(a: Agreement, today: string): string {
   if (a.status === 'requested') return 'Solicitud enviada';
-  if (a.status === 'offered') return 'Esperando aceptación';
-  if (a.status === 'completed') return 'Acuerdo cumplido';
-  if (a.status === 'declined') return 'No acordado';
+  if (a.status === 'offered') return 'Propuesta por aceptar';
+  if (a.status === 'completed') return 'Préstamo completado';
+  if (a.status === 'declined') return 'Sin acuerdo';
   if (a.status === 'cancelled') return 'Solicitud cancelada';
   if (
     overdueDays(a, today) ||
@@ -116,18 +116,18 @@ export function agreementStatus(a: Agreement, today: string): string {
       penaltyDeadline(a)! < today &&
       penaltyReported(a) < penaltyUnits(a, today))
   )
-    return 'En mora';
+    return 'Con retraso';
   if (
     a.tasks.every((t) => taskReported(t) >= (t.units ?? 1)) &&
     a.tasks.some((t) => taskValidated(t) < (t.units ?? 1))
   )
-    return 'En revisión familiar';
+    return 'Esperando confirmación familiar';
   if (
     a.tasks.every((t) => taskValidated(t) >= (t.units ?? 1)) &&
     penaltyValidated(a) < penaltyUnits(a, today)
   )
-    return 'Unidades adicionales pendientes';
-  return 'Vigente';
+    return 'Actividades extra pendientes';
+  return 'En curso';
 }
 export function agreementMetrics(agreements: Agreement[], today: string): AgreementMetrics {
   const done = agreements.filter((a) => a.status === 'completed' && a.completedAt && a.dueDate);
@@ -164,7 +164,7 @@ export function agreementMetrics(agreements: Agreement[], today: string): Agreem
     averageEarlyDays: early.length
       ? Math.round((-early.reduce((n, d) => n + d, 0) / early.length) * 10) / 10
       : 0,
-    overdue: active.filter((a) => agreementStatus(a, today) === 'En mora').length,
+    overdue: active.filter((a) => agreementStatus(a, today) === 'Con retraso').length,
     awaitingReview: active.reduce(
       (n, a) =>
         n +
@@ -207,7 +207,7 @@ export function observeDelays(f: import('./models').FamilyState): void {
           id: crypto.randomUUID(),
           at: f.today,
           actor: 'system',
-          text: 'Se registró una entrega vencida. La demora permanece en el historial.',
+          text: 'Se registró una entrega vencida. Los retrasos permanece en el historial.',
         });
       a.hadOverdue = true;
       a.maxOverdueDays = Math.max(a.maxOverdueDays ?? 0, delay);

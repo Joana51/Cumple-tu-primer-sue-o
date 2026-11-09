@@ -32,21 +32,21 @@
         <button (click)="showFeature('protegido')">
           <span class="feature-icon"><app-icon name="shield" /></span
           ><span
-            ><strong>Ahorro con propósito</strong
-            ><small>Su meta tiene un lugar seguro.</small></span
+            ><strong>Ahorro con propósito</strong><small>Dinero separado para su meta.</small></span
           ><app-icon name="chevron" />
         </button>
         <button (click)="showFeature('familia')">
           <span class="feature-icon peach"><app-icon name="heart" /></span
           ><span
-            ><strong>Crecer en familia</strong><small>Más confianza. Más motivación.</small></span
+            ><strong>Crecer en familia</strong
+            ><small>Metas y acuerdos que pueden revisar juntos.</small></span
           ><app-icon name="chevron" />
         </button>
         <button (click)="showFeature('aprende')">
           <span class="feature-icon lavender"><app-icon name="book" /></span
           ><span
             ><strong>Aprender a su ritmo</strong
-            ><small>Una experiencia para cada edad.</small></span
+            ><small>Explicaciones y actividades según su edad.</small></span
           ><app-icon name="chevron" />
         </button>
       </div>
@@ -85,7 +85,7 @@
         <div class="panel-icon"><app-icon name="sliders" /></div>
         <div>
           <h2>Prueba la experiencia</h2>
-          <p>Una demo. Muchas posibilidades.</p>
+          <p>Cambia de vista, edad y saldos.</p>
         </div>
         <button
           class="icon-button panel-close"
@@ -101,18 +101,18 @@
           [attr.aria-pressed]="panelTab() === 'profile'"
           (click)="panelTab.set('profile')"
         >
-          Personalizar</button
+          Ajustar demo</button
         ><button
           [class.active]="panelTab() === 'scenarios'"
           [attr.aria-pressed]="panelTab() === 'scenarios'"
           (click)="panelTab.set('scenarios')"
         >
-          Escenarios
+          Historias para probar
         </button>
       </div>
       @if (panelTab() === 'profile') {
         <div class="panel-role-section">
-          <label class="field-label" for="demo-child">Perfil de la demostración</label
+          <label class="field-label" for="demo-child">Hijo o hija que quieres mostrar</label
           ><select
             id="demo-child"
             [ngModel]="store.demoChildId()"
@@ -151,7 +151,7 @@
             autocomplete="off"
           />
           <div class="age-heading">
-            <label class="field-label" for="demo-age">Edad del usuario</label
+            <label class="field-label" for="demo-age">Edad del hijo o hija</label
             ><output for="demo-age">{{ store.demoChild().profile.age }} <small>años</small></output>
           </div>
           <input
@@ -172,10 +172,10 @@
               <p>
                 {{
                   store.demoAgeBand() === 'junior'
-                    ? 'Más juego, ejemplos simples y pequeños descubrimientos.'
+                    ? 'Ejemplos cotidianos y explicaciones cortas para empezar.'
                     : store.demoAgeBand() === 'explorer'
-                      ? 'Un equilibrio entre motivación, autonomía y planificación.'
-                      : 'Diseño sobrio, presupuesto y decisiones con más contexto.'
+                      ? 'Presupuesto, ahorro y decisiones con más autonomía.'
+                      : 'Comparar opciones y planificar gastos e imprevistos.'
                 }}
               </p>
             </div>
@@ -183,7 +183,7 @@
         </div>
         <div class="panel-section">
           <div class="eyebrow">02 <span>DINERO DE LA DEMO</span></div>
-          <label class="field-label" for="demo-balance">Saldo disponible <span>S/</span></label
+          <label class="field-label" for="demo-balance">Dinero disponible <span>S/</span></label
           ><input
             id="demo-balance"
             type="number"
@@ -195,7 +195,7 @@
           />
           @if (store.demoChild().goals[0]; as g) {
             <label class="field-label" for="demo-saved"
-              >Ahorrado en la primera meta <span>S/</span></label
+              >Ahorro de la primera meta <span>S/</span></label
             ><input
               id="demo-saved"
               type="number"
@@ -211,7 +211,7 @@
           }
         </div>
         <div class="panel-section last">
-          <div class="eyebrow">03 <span>TIEMPO Y FONDO FAMILIAR</span></div>
+          <div class="eyebrow">03 <span>FECHA Y DINERO FAMILIAR</span></div>
           <label class="field-label" for="demo-date">Fecha simulada</label
           ><input
             id="demo-date"
@@ -223,7 +223,8 @@
             <button (click)="advanceDate(1)">+1 día</button
             ><button (click)="advanceDate(7)">+7 días</button>
           </div>
-          <label class="field-label" for="demo-family-funds">Fondo para anticipos (S/)</label
+          <label class="field-label" for="demo-family-funds"
+            >Dinero familiar para préstamos (S/)</label
           ><input
             id="demo-family-funds"
             type="number"
@@ -237,7 +238,8 @@
             <p class="form-error" role="alert">{{ panelMessage() }}</p>
           }
           <p class="panel-hint">
-            Los cambios se reflejan al instante en el teléfono y se guardan en este navegador.
+            Los ajustes cambian el ejemplo y se guardan en este navegador. No se registran como
+            aportes ni retiros.
           </p>
           <p class="panel-hint">
             Para presentar: usa nombres ficticios. El selector alterna roles simulados; no es un
@@ -246,7 +248,7 @@
         </div>
       } @else {
         <div class="scenario-list">
-          <p>Elige un momento para contar la historia al jurado.</p>
+          <p>Carga un ejemplo para probar el ahorro y los retiros en familia.</p>
           @for (s of scenarios; track s.id) {
             <button class="scenario-button" (click)="scenarioConfirm = s.id">
               <span class="feature-icon"><app-icon [name]="s.icon" /></span
@@ -263,7 +265,9 @@
                 </p>
                 <div class="row">
                   <button class="secondary" (click)="scenarioConfirm = ''">Volver</button
-                  ><button class="primary" (click)="loadScenario(s.id)">Cargar escenario</button>
+                  ><button class="primary" (click)="loadScenario(s.id)">
+                    Reiniciar con esta historia
+                  </button>
                 </div>
               </div>
             }

@@ -70,7 +70,7 @@ export class ParentComponent {
         (a) =>
           a.status === 'requested' ||
           a.status === 'offered' ||
-          agreementStatus(a, this.store.family().today) === 'En mora'
+          agreementStatus(a, this.store.family().today) === 'Con retraso'
       )
   );
   history = computed(() =>
@@ -86,9 +86,9 @@ export class ParentComponent {
     return {
       home: 'Mi familia',
       children: 'Mis hijos',
-      detail: 'El camino de ' + this.child().profile.name,
+      detail: 'Metas y avances de ' + this.child().profile.name,
       agreements: 'Préstamos familiares',
-      activity: 'Nuestros avances',
+      activity: 'Movimientos de la familia',
     }[this.page()];
   }
   get dialogChild() {
@@ -137,7 +137,7 @@ export class ParentComponent {
     this.error = this.store.addChild(this.name, this.age, this.budget);
     if (!this.error) {
       this.sheet.set('');
-      this.notice.set('Un nuevo perfil se sumó a tu familia.');
+      this.notice.set('Hijo o hija añadido. Ya puedes ver sus metas.');
     }
   }
   contribute() {
@@ -151,7 +151,7 @@ export class ParentComponent {
     this.error = this.store.depositFor(this.dialogChildId, this.goalId, Number(this.amount), true);
     if (!this.error) {
       this.sheet.set('');
-      this.notice.set('Tu aporte se sumó únicamente a la meta elegida.');
+      this.notice.set('Aporte añadido a la meta seleccionada.');
     }
   }
   goal(g: Goal) {
@@ -164,8 +164,8 @@ export class ParentComponent {
     this.notice.set(
       error ||
         (yes
-          ? 'Retiro autorizado para el perfil correcto.'
-          : 'La solicitud no fue autorizada. El dinero sigue reservado.')
+          ? 'Retiro autorizado. El dinero pasó al saldo de tu hijo.'
+          : 'Retiro no autorizado. El ahorro sigue en la meta.')
     );
   }
   praise() {

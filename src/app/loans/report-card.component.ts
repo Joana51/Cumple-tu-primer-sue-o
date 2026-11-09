@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { UnitReport } from '../core/models';
 import { dateLabel } from '../core/agreement-rules';
 import { reportEvidence, reviewReminder } from '../core/evidence-rules';
+import { times } from '../core/ui-copy';
 
 @Component({
   selector: 'app-report-card',
@@ -11,17 +12,20 @@ import { reportEvidence, reviewReminder } from '../core/evidence-rules';
   template: `
     <div class="unit-report evidence-report">
       <div class="report-content">
-        <strong>{{ report().units }} unidad(es)</strong>
+        <strong>Actividad realizada {{ times(report().units) }}</strong>
         <span>{{ evidence(report(), today()) }}</span>
-        <small>Reporte original: {{ date(report().submittedAt) }}</small>
+        <small
+          >{{ parent() ? 'Aviso recibido el' : 'Avisaste el' }}
+          {{ date(report().submittedAt) }}</small
+        >
         @if (report().performedAt && report().performedAt !== report().submittedAt) {
-          <small
-            >Actividad declarada: {{ date(report().performedAt) }} · sin verificación
-            independiente</small
-          >
+          <small>Fecha de la actividad según el aviso: {{ date(report().performedAt) }}.</small>
         }
         @if (report().validatedAt) {
-          <small>Revisado: {{ date(report().validatedAt) }}</small>
+          <small
+            >{{ parent() ? 'Respondiste el' : 'Tu familia respondió el' }}
+            {{ date(report().validatedAt) }}</small
+          >
         }
         @if (report().note) {
           <p>{{ report().note }}</p>
@@ -34,13 +38,16 @@ import { reportEvidence, reviewReminder } from '../core/evidence-rules';
         }
         @if (report().dispute; as d) {
           <div class="dispute-context">
-            <b>Revisión solicitada · {{ date(d.openedAt) }}</b>
+            <b>Pediste conversar el {{ date(d.openedAt) }}</b>
             <p>{{ d.reason }}</p>
             @if (d.status === 'resolved') {
-              <small>Conversación registrada: {{ date(d.resolvedAt) }}</small>
+              <small>Conversaron el {{ date(d.resolvedAt) }}</small>
               <p>{{ d.response }}</p>
               @if (d.resolution === 'unverifiable') {
-                <p>No cuenta como éxito ni fracaso verificable. El acuerdo sigue abierto.</p>
+                <p>
+                  No hay información para dar la actividad por hecha ni por incumplida. El préstamo
+                  sigue abierto.
+                </p>
               }
             }
           </div>
@@ -52,17 +59,19 @@ import { reportEvidence, reviewReminder } from '../core/evidence-rules';
           report().dispute?.status !== 'open'
         ) {
           <div class="row">
-            <button class="small-action" (click)="review.emit(true)">Confirmar</button>
-            <button class="small-action muted" (click)="review.emit(false)">Revisar</button>
+            <button class="small-action" (click)="review.emit(true)">Confirmar actividad</button>
+            <button class="small-action muted" (click)="review.emit(false)">
+              Pedir que la revise
+            </button>
           </div>
         }
         @if (active() && !parent() && report().status === 'rejected' && !report().dispute) {
           <button class="small-action muted" (click)="editing = !editing">
-            Solicitar revisión
+            Pedir que lo revisen juntos
           </button>
           @if (editing) {
             <label class="field-label" [for]="'dispute-' + report().id"
-              >¿Qué quieres revisar juntos?</label
+              >¿Qué te gustaría aclarar?</label
             >
             <textarea
               [id]="'dispute-' + report().id"
@@ -75,7 +84,7 @@ import { reportEvidence, reviewReminder } from '../core/evidence-rules';
               [disabled]="!reason.trim()"
               (click)="dispute.emit(reason)"
             >
-              Enviar revisión
+              Enviar mi explicación
             </button>
           }
         }
@@ -84,7 +93,9 @@ import { reportEvidence, reviewReminder } from '../core/evidence-rules';
           parent() &&
           (report().dispute?.status === 'open' || report().dispute?.resolution === 'unverifiable')
         ) {
-          <label class="field-label" [for]="'response-' + report().id">Lo que conversaron</label>
+          <label class="field-label" [for]="'response-' + report().id"
+            >¿Qué pudieron aclarar?</label
+          >
           <textarea
             [id]="'response-' + report().id"
             [(ngModel)]="response"
@@ -96,7 +107,7 @@ import { reportEvidence, reviewReminder } from '../core/evidence-rules';
             [disabled]="!response.trim()"
             (click)="resolve.emit({ resolution: 'confirmed', response })"
           >
-            Confirmar tras conversar
+            Confirmar actividad realizada
           </button>
           @if (report().dispute?.status === 'open') {
             <button
@@ -104,13 +115,13 @@ import { reportEvidence, reviewReminder } from '../core/evidence-rules';
               [disabled]="!response.trim()"
               (click)="resolve.emit({ resolution: 'unverifiable', response })"
             >
-              Dejar sin conclusión verificable
+              Dejar sin confirmar
             </button>
           }
         }
         @if (report().reviews?.length) {
           <details class="report-reviews">
-            <summary>Ver revisiones conservadas</summary>
+            <summary>Ver respuestas anteriores</summary>
             @for (r of report().reviews; track $index) {
               <p>
                 {{ date(r.at) }} · {{ r.accepted ? 'Confirmación' : 'Observación' }}:
@@ -137,4 +148,5 @@ export class ReportCardComponent {
   date = dateLabel;
   evidence = reportEvidence;
   reminder = reviewReminder;
+  times = times;
 }

@@ -93,7 +93,7 @@ export class MobileComponent {
     { art: 'bike', name: 'Bicicleta' },
     { art: 'headphones', name: 'Audífonos' },
     { art: 'trip', name: 'Viaje' },
-    { art: 'star', name: 'Otro sueño' },
+    { art: 'star', name: 'Otra meta' },
   ];
   constructor() {
     effect(() => {
@@ -128,7 +128,7 @@ export class MobileComponent {
   }
   get pageTitle() {
     return {
-      inicio: 'Tu dinero. Tus sueños.',
+      inicio: 'Tu dinero y tus metas',
       suenos: 'Mis sueños',
       protegido: 'Mi ahorro protegido',
       aprende: 'Aprende a tu ritmo',
@@ -140,15 +140,15 @@ export class MobileComponent {
   get modalTitle() {
     return {
       '': '',
-      create: this.editingId ? 'Ajustar mi sueño' : 'Un nuevo sueño',
-      detail: 'Mi sueño, paso a paso',
-      deposit: 'Un paso más cerca',
-      withdraw: 'Un retiro con un plan',
+      create: this.editingId ? 'Editar meta de ahorro' : 'Crear meta de ahorro',
+      detail: 'Detalle de mi meta',
+      deposit: 'Agregar ahorro',
+      withdraw: 'Retirar ahorro',
       'family-deposit': 'Acompañar su sueño',
       lesson: 'Aprende con tus decisiones',
       notifications: 'Tus novedades',
       summary: 'Avances en familia',
-      cancel: 'Cambiar de camino',
+      cancel: 'Cerrar meta de ahorro',
     }[this.modal()];
   }
   hasPending(id: number) {
@@ -180,12 +180,12 @@ export class MobileComponent {
       },
       {
         icon: 'shield',
-        title: 'Un paso de ahorro',
+        title: 'Mi primer ahorro',
         done: this.state.earnedBadges.includes('first-saving'),
       },
       {
         icon: 'book',
-        title: 'Una nueva idea',
+        title: 'Mi primera actividad',
         done: this.state.earnedBadges.includes('first-lesson'),
       },
       {
@@ -260,7 +260,9 @@ export class MobileComponent {
     if (!this.error) {
       this.close();
       this.go('suenos');
-      this.notify(this.editingId ? 'Tu plan se actualizó.' : '¡Tu nuevo sueño ya tiene un plan!');
+      this.notify(
+        this.editingId ? 'Cambios de la meta guardados.' : 'Meta creada. Ya puedes agregar ahorro.'
+      );
     }
   }
   deposit(): void {
@@ -272,11 +274,7 @@ export class MobileComponent {
     if (!this.error) {
       const done = this.selected && this.selected.saved >= this.selected.target;
       this.close();
-      this.notify(
-        done
-          ? '¡Lo lograste! Tu sueño está al 100%.'
-          : '¡Un paso más! Tu aporte ya está en tu sueño.'
-      );
+      this.notify(done ? '¡Lo lograste! Tu sueño está al 100%.' : 'Ahorro añadido a tu meta.');
     }
   }
   withdraw(): void {
@@ -296,8 +294,8 @@ export class MobileComponent {
     this.notify(
       error ||
         (yes
-          ? 'Retiro autorizado. El saldo se actualizó.'
-          : 'Retiro no autorizado. Pueden conversar y volver a intentarlo.')
+          ? 'Retiro autorizado. El dinero ya está disponible para gastar.'
+          : 'Tu familia no autorizó el retiro. El ahorro sigue en la meta; pueden conversar y enviar otra solicitud.')
     );
   }
   startLesson(lesson: Lesson): void {
@@ -318,7 +316,7 @@ export class MobileComponent {
       age: Number(this.profileAge),
       avatar: this.profileAvatar,
     });
-    this.notify('Tu perfil se actualizó.');
+    this.notify('Cambios de perfil guardados.');
   }
   cancelSelectedGoal(): void {
     if (!this.selected) return;

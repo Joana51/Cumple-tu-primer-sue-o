@@ -69,18 +69,18 @@ test('revisión olvidada visible, neutral y confirmación tardía conserva el re
 }) => {
   const original = await prepare(page);
   await loans(page, true);
-  await expect(page.locator('.evidence-panel')).toContainText('sin conclusión verificable');
-  await expect(page.locator('.evidence-report')).toContainText('14 días sin revisión');
+  await expect(page.locator('.evidence-panel')).toContainText('sin información suficiente');
+  await expect(page.locator('.evidence-report')).toContainText('14 días sin respuesta');
   await page
     .locator('.evidence-report')
-    .getByRole('button', { name: 'Confirmar', exact: true })
+    .getByRole('button', { name: 'Confirmar actividad', exact: true })
     .click();
-  await expect(page.locator('.loan-detail-hero')).toContainText('Acuerdo cumplido');
-  await expect(page.locator('.evidence-report')).toContainText('Confirmación familiar tardía');
+  await expect(page.locator('.loan-detail-hero')).toContainText('Préstamo completado');
+  await expect(page.locator('.evidence-report')).toContainText('Confirmado después de 14 días');
   expect((await state(page)).agreements[0].tasks[0].reports![0].submittedAt).toBe(original);
   await page.reload();
   await loans(page);
-  await expect(page.locator('.evidence-report')).toContainText('Confirmación familiar tardía');
+  await expect(page.locator('.evidence-report')).toContainText('Confirmado después de 14 días');
   await expect(page.getByRole('button', { name: 'Agregar al historial', exact: true })).toHaveCount(
     0
   );
@@ -90,26 +90,26 @@ test('el hijo cuestiona una observación; el adulto conversa y deja un resultado
 }) => {
   await prepare(page, true);
   await loans(page);
-  await page.getByRole('button', { name: 'Solicitar revisión', exact: true }).click();
-  await page.getByLabel('¿Qué quieres revisar juntos?').fill('Podemos conversar sobre lo que leí.');
-  await page.getByRole('button', { name: 'Enviar revisión', exact: true }).click();
-  await expect(page.locator('.evidence-report')).toContainText('Resultado cuestionado');
+  await page.getByRole('button', { name: 'Pedir que lo revisen juntos', exact: true }).click();
+  await page.getByLabel('¿Qué te gustaría aclarar?').fill('Podemos conversar sobre lo que leí.');
+  await page.getByRole('button', { name: 'Enviar mi explicación', exact: true }).click();
+  await expect(page.locator('.evidence-report')).toContainText('Revisión solicitada');
   await page.getByRole('button', { name: 'Vista del adulto', exact: true }).click();
   await page
     .getByRole('navigation', { name: 'Navegación adulta' })
     .getByRole('button', { name: 'Préstamos', exact: true })
     .click();
   await page.locator('.loan-card').filter({ hasText: 'Lectura acordada' }).click();
-  await page.getByLabel('Lo que conversaron').fill('Aún no tenemos información suficiente.');
-  await page.getByRole('button', { name: 'Dejar sin conclusión verificable', exact: true }).click();
-  await expect(page.locator('.evidence-report')).toContainText('Sin conclusión verificable');
+  await page.getByLabel('¿Qué pudieron aclarar?').fill('Aún no tenemos información suficiente.');
+  await page.getByRole('button', { name: 'Dejar sin confirmar', exact: true }).click();
+  await expect(page.locator('.evidence-report')).toContainText('Sin información suficiente');
   expect((await state(page)).agreements[0].status).toBe('active');
   await page
-    .getByLabel('Lo que conversaron')
+    .getByLabel('¿Qué pudieron aclarar?')
     .fill('Ahora pudimos conversar y confirmar la actividad.');
-  await page.getByRole('button', { name: 'Confirmar tras conversar', exact: true }).click();
-  await expect(page.locator('.loan-detail-hero')).toContainText('Acuerdo cumplido');
-  await page.getByText('Ver revisiones conservadas', { exact: true }).click();
+  await page.getByRole('button', { name: 'Confirmar actividad realizada', exact: true }).click();
+  await expect(page.locator('.loan-detail-hero')).toContainText('Préstamo completado');
+  await page.getByText('Ver respuestas anteriores', { exact: true }).click();
   await expect(page.locator('.report-reviews')).toContainText('Observación');
   await expect(page.locator('.report-reviews')).toContainText('Confirmación');
 });

@@ -233,7 +233,7 @@ export class DemoStore {
       .sort()
       .at(-1);
     if (latest && date < latest)
-      return 'La fecha no puede retroceder antes de un evento. Restablece un escenario para empezar otra vez.';
+      return 'No puedes elegir una fecha anterior a una acción registrada. Carga otra historia para empezar de nuevo.';
     const f = structuredClone(this.family());
     f.today = date;
     this.persist(f);
@@ -250,7 +250,7 @@ export class DemoStore {
       !Number.isFinite(budget) ||
       budget < 0
     )
-      return 'Revisa nombre, edad y aporte semanal.';
+      return 'Escribe un nombre, una edad de 10 a 17 años y un ahorro semanal entre S/ 0 y S/ 10 000.';
     if (this.family().children.length >= 6) return 'Esta demo admite hasta seis perfiles.';
     const base = initialState();
     base.profile = {
@@ -392,7 +392,7 @@ export class DemoStore {
       }
     } catch {
       this.persistenceWarning.set(
-        'El almacenamiento no está disponible o contiene datos inválidos. Puedes seguir usando la demo.'
+        'No pudimos abrir los datos guardados. Puedes probar la demo con los ejemplos.'
       );
     }
     return this.preserveAchievements(initialState());
@@ -444,8 +444,7 @@ export class DemoStore {
     }, childId);
   }
   saveGoal(value: Omit<Goal, 'id' | 'saved'>, id?: number): string {
-    if (this.role() !== 'child')
-      return 'Las metas las crea su protagonista desde la vista adolescente.';
+    if (this.role() !== 'child') return 'Cambia a la vista del hijo para crear una meta de ahorro.';
     if (
       !value.name.trim() ||
       !Number.isFinite(value.target) ||
@@ -455,7 +454,7 @@ export class DemoStore {
       value.weeks < 1 ||
       value.weeks > 260
     )
-      return 'Revisa el nombre, el monto y el plazo de tu meta.';
+      return 'Escribe un nombre, un costo entre S/ 1 y S/ 100 000 y un plazo de 1 a 260 semanas.';
     const current = this.state().goals.find((g) => g.id === id);
     if (current && isGoalCompleted(current))
       return 'Este sueño ya está cumplido. Crea una nueva meta para tu próximo objetivo.';
@@ -494,12 +493,12 @@ export class DemoStore {
     const child = this.child(childId)!;
     const g = child.goals.find((g) => g.id === id);
     if (!g || !Number.isFinite(amount) || amount <= 0 || roundMoney(amount) !== amount)
-      return 'Escribe un monto válido con hasta dos decimales.';
+      return 'Escribe un monto mayor que S/ 0, con hasta 2 decimales.';
     if (isGoalCompleted(g)) return 'Este sueño ya está cumplido. Puedes empezar una nueva meta.';
     if (!family && amount > child.balance)
-      return 'Tu saldo disponible no alcanza para este aporte.';
+      return 'No tienes suficiente dinero disponible. Prueba con un monto menor.';
     if (amount > roundMoney(g.target - g.saved))
-      return 'El aporte supera lo que falta para alcanzar la meta.';
+      return 'El monto es mayor de lo que falta para la meta. Reduce el aporte.';
     this.mutate((s) => {
       const goal = s.goals.find((g) => g.id === id)!;
       goal.saved = roundMoney(goal.saved + amount);
@@ -515,7 +514,7 @@ export class DemoStore {
     return '';
   }
   withdraw(id: number, amount: number, reason: string): string {
-    if (this.role() !== 'child') return 'El retiro debe solicitarlo el adolescente.';
+    if (this.role() !== 'child') return 'Cambia a la vista del hijo para solicitar el retiro.';
     const g = this.state().goals.find((g) => g.id === id);
     if (
       !g ||
@@ -524,7 +523,7 @@ export class DemoStore {
       amount > g.saved ||
       roundMoney(amount) !== amount
     )
-      return 'El monto debe estar dentro de tu ahorro y tener hasta dos decimales.';
+      return 'Elige un monto mayor que S/ 0 y menor o igual a lo ahorrado. Usa hasta 2 decimales.';
     if (this.pending().some((r) => r.goalId === id))
       return 'Ya hay una solicitud pendiente para esta meta.';
     if (g.protected && !isGoalCompleted(g) && !reason.trim())
@@ -578,7 +577,7 @@ export class DemoStore {
   cancelGoal(id: number): string {
     if (this.role() !== 'child') return 'Esta acción corresponde al adolescente.';
     if (this.childAgreements().some((a) => a.goalId === id && agreementOpen(a)))
-      return 'Esta meta tiene un préstamo o una solicitud abierta. Resuelve ese recorrido antes de cerrarla.';
+      return 'Esta meta tiene un préstamo o una solicitud pendiente. Termina o resuelve ese acuerdo antes de cerrar la meta.';
     this.mutate((s) => {
       const g = s.goals.find((g) => g.id === id);
       if (!g || g.saved > 0 || isGoalCompleted(g)) return;
