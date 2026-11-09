@@ -2,13 +2,129 @@ import { test, expect } from '@playwright/test';
 import { familySeed } from '../src/app/core/family-seed';
 import { DemoState, FamilyState, LoanTerms, Role } from '../src/app/core/models';
 import { executeLoanCommand, LoanCommand } from '../src/app/core/loan-engine';
+import { evidenceSummary, reportEvidence, reviewReminder } from '../src/app/core/evidence-rules';
 import {
+  addDays,
   agreementMetrics,
   agreementStatus,
   observeDelays,
   penaltyUnits,
   taskValidated,
 } from '../src/app/core/agreement-rules';
+
+test('el silencio de 14 días es neutral; confirmar tarde conserva fechas y no cobra por la revisión adulta', () => {
+  const f = fixture();
+  const id = accepted(f, { ...terms(true), totalUnits: 1 });
+  const task = loan(f, id).tasks[0].id;
+  const original = f.today;
+  const reportId = report(f, id, task);
+  const r = () => loan(f, id).tasks[0].reports![0];
+  f.today = addDays(original, 2);
+  expect(reviewReminder(r(), f.today)).toContain('48 horas');
+  f.today = addDays(original, 7);
+  expect(reviewReminder(r(), f.today)).toContain('7 días');
+  f.today = addDays(original, 14);
+  observeDelays(f);
+  expect(reportEvidence(r(), f.today)).toContain('no verificable');
+  expect(evidenceSummary(loan(f, id), f.today).neutral).toBe(1);
+  expect(agreementMetrics(f.agreements, f.today).onTimeRate).toBeNull();
+  expect(penaltyUnits(loan(f, id), f.today)).toBe(0);
+  expect(loan(f, id).hadOverdue).not.toBe(true);
+  expect(loan(f, id).status).toBe('active');
+  review(f, id, task, reportId);
+  expect(r().submittedAt).toBe(original);
+  expect(r().validatedAt).toBe(f.today);
+  expect(loan(f, id).completedAt).toBe(original);
+  expect(reportEvidence(r(), f.today)).toBe('Confirmación familiar tardía');
+});
+
+test('declarar una actividad pasada no retrocede el reporte ni vuelve puntual una entrega tardía', () => {
+  const f = fixture();
+  const original = f.today;
+  const id = accepted(f, { ...terms(), totalUnits: 1 });
+  const task = loan(f, id).tasks[0].id;
+  f.today = addDays(original, 3);
+  ok(f, 'child', 'alex', {
+    type: 'report',
+    id,
+    taskId: task,
+    units: 1,
+    performedAt: original,
+    note: 'Terminé mi lectura.',
+  });
+  const r = loan(f, id).tasks[0].reports![0];
+  expect(r.submittedAt).toBe(f.today);
+  expect(r.performedAt).toBe(original);
+  review(f, id, task, r.id);
+  expect(agreementMetrics(f.agreements, f.today).onTimeRate).toBe(0);
+});
+
+test('cuestionar una observación conserva la historia y una conclusión neutral no completa el acuerdo', () => {
+  const f = fixture();
+  const id = accepted(f, { ...terms(true), totalUnits: 1 });
+  const task = loan(f, id).tasks[0].id;
+  const rId = report(f, id, task);
+  review(f, id, task, rId, false);
+  const request = {
+    type: 'dispute' as const,
+    id,
+    taskId: task,
+    reportId: rId,
+    reason: 'Sí hice la lectura. Revisemos juntos.',
+  };
+  expect(send(f, 'child', 'lucia', request)).not.toBe('');
+  ok(f, 'child', 'alex', request);
+  const resolve = {
+    type: 'resolve-dispute' as const,
+    id,
+    taskId: task,
+    reportId: rId,
+    resolution: 'unverifiable' as const,
+    response: 'Nos falta información para concluir.',
+  };
+  expect(send(f, 'child', 'alex', resolve)).not.toBe('');
+  ok(f, 'parent', 'alex', resolve);
+  f.today = addDays(f.today, 20);
+  expect(penaltyUnits(loan(f, id), f.today)).toBe(0);
+  expect(evidenceSummary(loan(f, id), f.today).neutral).toBe(1);
+  expect(loan(f, id).status).toBe('active');
+  ok(f, 'parent', 'alex', {
+    ...resolve,
+    resolution: 'confirmed',
+    response: 'Conversamos y pudimos confirmar la entrega.',
+  });
+  const r = loan(f, id).tasks[0].reports![0];
+  expect(r.reviews!.map((x) => x.accepted)).toEqual([false, true]);
+  expect(r.submittedAt).toBe('2026-11-08');
+  expect(loan(f, id).status).toBe('completed');
+});
+
+test('no se duplican unidades al cuestionar un reporte que ya tiene reemplazo', () => {
+  const f = fixture();
+  const id = accepted(f, { ...terms(), totalUnits: 1 });
+  const task = loan(f, id).tasks[0].id;
+  const old = report(f, id, task);
+  review(f, id, task, old, false);
+  report(f, id, task);
+  expect(
+    send(f, 'child', 'alex', {
+      type: 'dispute',
+      id,
+      taskId: task,
+      reportId: old,
+      reason: 'Revisemos',
+    })
+  ).toContain('reemplazo');
+});
+
+test('el calendario original se conserva al aceptar una ampliación', () => {
+  const f = fixture();
+  const id = accepted(f);
+  const dates = loan(f, id).tasks.map((t) => t.dueDate);
+  ok(f, 'parent', 'alex', { type: 'extend', id, date: addDays(loan(f, id).dueDate!, 7) });
+  ok(f, 'child', 'alex', { type: 'accept-extension', id, accept: true });
+  expect(loan(f, id).tasks.map((t) => t.originalDueDate)).toEqual(dates);
+});
 
 function fixture() {
   const base: DemoState = {

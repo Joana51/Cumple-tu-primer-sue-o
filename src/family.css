@@ -940,6 +940,80 @@ app-loans {
 .parent-app .loan-definition {
   font-size: 8px;
 }
+.evidence-guide,
+.evidence-panel {
+  margin: 16px 0;
+  padding: 16px;
+  border: 1px solid #dce5f4;
+  border-radius: 16px;
+  background: #f3f6fc;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.evidence-panel h3 {
+  margin: 0;
+  font-size: 15px;
+}
+.evidence-guide summary,
+.evidence-panel summary,
+.report-reviews summary {
+  cursor: pointer;
+  font-weight: 600;
+  min-height: 28px;
+}
+.evidence-panel .tiny-pill {
+  margin-top: 10px;
+  white-space: normal;
+}
+.evidence-panel p:last-child,
+.evidence-guide p:last-child {
+  margin-bottom: 0;
+}
+.evidence-report {
+  display: block;
+}
+.report-content {
+  width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.report-content > strong,
+.report-content > span,
+.report-content > small {
+  display: block;
+}
+.report-content > span {
+  margin: 4px 0;
+  font-weight: 600;
+}
+.report-content p {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.report-content .row {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.review-reminder {
+  border-left: 3px solid #edab48;
+  padding-left: 10px;
+  color: #694816;
+}
+.dispute-context {
+  border-left: 3px solid #7b93bd;
+  padding-left: 10px;
+  margin: 12px 0;
+}
+.report-reviews {
+  margin-top: 12px;
+  font-size: 11px;
+}
+.report-content textarea {
+  max-width: 100%;
+  box-sizing: border-box;
+}
 @media (max-width: 650px) {
   .presentation-roles {
     top: auto;

@@ -58,6 +58,7 @@ export interface AgreementTask {
   units?: number;
   dueDate?: string;
   reports?: UnitReport[];
+  originalDueDate?: string;
 }
 export interface UnitReport {
   id: string;
@@ -66,6 +67,17 @@ export interface UnitReport {
   status: 'submitted' | 'validated' | 'rejected';
   validatedAt?: string;
   feedback?: string;
+  performedAt?: string;
+  note?: string;
+  reviews?: { at: string; accepted: boolean; feedback: string }[];
+  dispute?: {
+    reason: string;
+    openedAt: string;
+    status: 'open' | 'resolved';
+    resolution?: 'confirmed' | 'unverifiable';
+    resolvedAt?: string;
+    response?: string;
+  };
 }
 export interface LatePolicy {
   enabled: boolean;

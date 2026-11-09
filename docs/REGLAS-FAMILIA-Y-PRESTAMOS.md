@@ -2,6 +2,8 @@
 
 Implementación local de noviembre de 2026. Las cantidades, los perfiles y sus historiales son ficticios. «Préstamo» describe un anticipo familiar con compromisos de actividades: no es un crédito bancario ni produce un reporte crediticio oficial.
 
+Actualización del piloto: [ORIGEN](CLAVE-ORIGEN.md) documenta la separación entre cumplimiento y evidencia, revisiones olvidadas, fechas declaradas, reclamaciones y los supuestos de seguridad y privacidad para producción.
+
 ## Recorrido de presentación
 
 1. Abrir http://localhost:4200. El selector externo alterna hijo/adulto y permite elegir el perfil. Alex y Lucía tienen saldos, metas e historiales diferentes.

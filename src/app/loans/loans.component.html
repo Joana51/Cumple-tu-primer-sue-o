@@ -31,6 +31,22 @@
       <div class="loan-definition">
         Simulación educativa · Se devuelve con acciones, no con dinero.
       </div>
+      <details class="evidence-guide">
+        <summary>Cumplimiento y evidencia: ¿qué se registra?</summary>
+        <p>
+          Todos los acuerdos conservan sus resultados. No se eligen solo los exitosos ni se envían a
+          un banco.
+        </p>
+        <p>
+          Una confirmación familiar no es una verificación independiente. Si falta revisión, el
+          resultado queda pendiente; a los 14 días se muestra como no verificable, sin atribuir
+          incumplimiento ni confirmar un éxito.
+        </p>
+        <p>
+          Los recordatorios de 48 horas y 7 días aparecen aquí. Puedes cuestionar una observación y
+          conversar sin cambiar las fechas originales.
+        </p>
+      </details>
     </section>
     <button class="primary full" [disabled]="open()" (click)="start()">
       <app-icon name="plus" />{{ parent() ? 'Proponer un préstamo' : 'Solicitar un préstamo' }}
@@ -66,6 +82,9 @@
           ><app-icon name="chevron" />
         </div>
         <h3>{{ a.title }}</h3>
+        @if (evidenceSummary(a, today()).neutral; as count) {
+          <p class="review-reminder">{{ count }} reporte(s) sin conclusión verificable</p>
+        }
         <div class="row">
           <strong>{{ money(a.amount) }}</strong
           ><small>{{
@@ -397,6 +416,47 @@
         <strong>{{ money(a.amount) }}</strong>
         <p>{{ a.reason }}</p>
       </div>
+      @if (a.acceptedAt) {
+        @let evidence = evidenceSummary(a, today());
+        <section class="evidence-panel" aria-label="Calidad de la evidencia">
+          <div class="row">
+            <h3>Cumplimiento y evidencia</h3>
+            <app-icon name="shield" />
+          </div>
+          <span class="tiny-pill">REGISTRO FAMILIAR · SIMULADO</span>
+          <p>
+            {{ evidence.confirmed }} reportes confirmados por la familia ·
+            {{ evidence.pending }} pendientes.
+          </p>
+          @if (evidence.neutral) {
+            <p class="review-reminder">
+              {{ evidence.neutral }} reporte(s) sin conclusión verificable. No equivalen a éxito ni
+              a incumplimiento verificable.
+            </p>
+          }
+          @if (evidence.late) {
+            <p>
+              {{ evidence.late }} confirmación(es) tardía(s). Conservan la fecha del reporte
+              original.
+            </p>
+          }
+          <details>
+            <summary>Qué puede demostrar este registro</summary>
+            <p>
+              Se registraron declaraciones y revisiones familiares en esta demo. No hay validación
+              independiente de las actividades ni de dinero real.
+            </p>
+            <p>
+              El estado familiar del préstamo y la calidad de su evidencia son distintos. Ni las
+              confirmaciones ni las unidades por mora generan un score bancario.
+            </p>
+            <p>
+              Se conservan todos los resultados del perfil: confirmados, pendientes y observados. No
+              existe una selección de éxitos para un historial futuro.
+            </p>
+          </details>
+        </section>
+      }
       @if (a.status === 'requested') {
         <div class="info-card">
           <app-icon name="clock" />
@@ -465,30 +525,23 @@
                 dateLabel(t.dueDate ?? a.dueDate)
               }}</span>
             </div>
+            @if (t.originalDueDate && t.originalDueDate !== t.dueDate) {
+              <p class="input-hint">
+                Plazo original: {{ dateLabel(t.originalDueDate) }} · ampliación acordada registrada.
+              </p>
+            }
             <h3>{{ t.title }}</h3>
             <p>{{ taskValidated(t) }} de {{ t.units ?? 1 }} unidades confirmadas</p>
             @for (r of taskReports(t); track r.id) {
-              <div class="unit-report">
-                <span
-                  >{{ r.units }} unidad(es) · {{ dateLabel(r.submittedAt)
-                  }}<small>{{
-                    r.status === 'validated'
-                      ? 'Confirmadas'
-                      : r.status === 'submitted'
-                        ? 'En revisión'
-                        : r.feedback
-                  }}</small></span
-                >
-                @if (parent() && r.status === 'submitted' && a.status === 'active') {
-                  <div class="row">
-                    <button class="small-action" (click)="review(t.id, r.id, true)">
-                      Confirmar</button
-                    ><button class="small-action muted" (click)="review(t.id, r.id, false)">
-                      Revisar
-                    </button>
-                  </div>
-                }
-              </div>
+              <app-report-card
+                [report]="r"
+                [today]="today()"
+                [parent]="parent()"
+                [active]="a.status === 'active'"
+                (review)="review(t.id, r.id, $event)"
+                (dispute)="dispute(t.id, r.id, $event)"
+                (resolve)="resolveDispute(t.id, r.id, $event)"
+              />
             }
             @if (!parent() && a.status === 'active' && taskReported(t) < (t.units ?? 1)) {
               <button class="secondary full" (click)="report(t.id)">Registrar entrega</button>
@@ -513,27 +566,15 @@
             <p>La misma unidad: {{ a.unitLabel ?? a.tasks[0]?.title }}</p>
             <p>Plazo adicional: {{ dateLabel(penaltyDeadline(a)) }}</p>
             @for (r of a.penaltyReports ?? []; track r.id) {
-              <div class="unit-report">
-                <span
-                  >{{ r.units }} unidad(es) · {{ dateLabel(r.submittedAt)
-                  }}<small>{{
-                    r.status === 'validated'
-                      ? 'Confirmadas'
-                      : r.status === 'submitted'
-                        ? 'En revisión'
-                        : r.feedback
-                  }}</small></span
-                >
-                @if (parent() && r.status === 'submitted' && a.status === 'active') {
-                  <div class="row">
-                    <button class="small-action" (click)="review('penalty', r.id, true)">
-                      Confirmar</button
-                    ><button class="small-action muted" (click)="review('penalty', r.id, false)">
-                      Revisar
-                    </button>
-                  </div>
-                }
-              </div>
+              <app-report-card
+                [report]="r"
+                [today]="today()"
+                [parent]="parent()"
+                [active]="a.status === 'active'"
+                (review)="review('penalty', r.id, $event)"
+                (dispute)="dispute('penalty', r.id, $event)"
+                (resolve)="resolveDispute('penalty', r.id, $event)"
+              />
             }
             @if (!parent() && a.status === 'active' && penaltyReported(a) < penalty(a)) {
               <button class="secondary full" (click)="report('penalty')">
@@ -650,7 +691,35 @@
           step="1"
           [(ngModel)]="units"
           required
-        /><button class="primary full form-submit" type="submit">Enviar a revisión</button>
+        />
+        <label class="field-label" for="report-performed">¿Qué día realizaste la actividad?</label>
+        <input
+          id="report-performed"
+          name="performed"
+          type="date"
+          [min]="a.acceptedAt"
+          [max]="today()"
+          [(ngModel)]="performedAt"
+          required
+        />
+        <p class="input-hint">
+          Es una fecha declarada. El reporte quedará registrado hoy, {{ dateLabel(today()) }}. Una
+          fecha anterior no cambia la puntualidad ni los plazos.
+        </p>
+        <label class="field-label" for="report-note">Cuéntalo brevemente (opcional)</label>
+        <textarea
+          id="report-note"
+          name="note"
+          [(ngModel)]="reportNote"
+          maxlength="180"
+          rows="2"
+          placeholder="Ej. Terminé la sesión de lectura acordada"
+        ></textarea>
+        <p class="input-hint">
+          No incluyas nombres completos, direcciones ni información privada. Este piloto no solicita
+          fotos ni videos.
+        </p>
+        <button class="primary full form-submit" type="submit">Enviar a revisión</button>
       </form>
     }
   }

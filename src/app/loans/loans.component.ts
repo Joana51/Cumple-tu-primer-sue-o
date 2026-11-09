@@ -19,11 +19,13 @@ import {
 } from '../core/agreement-rules';
 import { LoanCommand, makeSchedule, termsError, policyError } from '../core/loan-engine';
 import { IconComponent } from '../shared/icon.component';
+import { ReportCardComponent } from './report-card.component';
+import { evidenceSummary } from '../core/evidence-rules';
 
 @Component({
   selector: 'app-loans',
   standalone: true,
-  imports: [FormsModule, IconComponent],
+  imports: [FormsModule, IconComponent, ReportCardComponent],
   templateUrl: './loans.component.html',
 })
 export class LoansComponent {
@@ -45,6 +47,8 @@ export class LoansComponent {
   accepted = false;
   reportTaskId = '';
   units = 1;
+  performedAt = '';
+  reportNote = '';
   feedback = 'Revisemos esta entrega juntos.';
   newDate = '';
   terms: LoanTerms = this.defaults();
@@ -89,6 +93,7 @@ export class LoansComponent {
   penaltyReported = penaltyReported;
   penaltyValidated = penaltyValidated;
   penaltyDeadline = penaltyDeadline;
+  evidenceSummary = evidenceSummary;
   constructor() {
     effect(() => {
       this.childId();
@@ -259,6 +264,8 @@ export class LoansComponent {
   report(taskId: string) {
     this.reportTaskId = taskId;
     this.units = Math.max(1, this.remaining);
+    this.performedAt = this.today();
+    this.reportNote = '';
     this.navigate('report');
   }
   sendReport() {
@@ -269,6 +276,8 @@ export class LoansComponent {
           id: this.selectedId(),
           taskId: this.reportTaskId,
           units: Number(this.units),
+          performedAt: this.performedAt,
+          note: this.reportNote,
         },
         'Entrega registrada. Tu familia podrá revisarla.'
       )
@@ -286,6 +295,24 @@ export class LoansComponent {
         feedback: this.feedback,
       },
       yes ? 'Entrega confirmada.' : 'Se envió una observación para revisar juntos.'
+    );
+  }
+  dispute(taskId: string, reportId: string, reason: string) {
+    this.command(
+      { type: 'dispute', id: this.selectedId(), taskId, reportId, reason },
+      'Revisión solicitada. Se conserva tu reporte original.'
+    );
+  }
+  resolveDispute(
+    taskId: string,
+    reportId: string,
+    result: { resolution: 'confirmed' | 'unverifiable'; response: string }
+  ) {
+    this.command(
+      { type: 'resolve-dispute', id: this.selectedId(), taskId, reportId, ...result },
+      result.resolution === 'confirmed'
+        ? 'Entrega confirmada tras conversar.'
+        : 'Sin conclusión verificable: no se atribuye éxito ni fracaso externo.'
     );
   }
   extension() {

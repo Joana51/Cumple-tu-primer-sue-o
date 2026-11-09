@@ -46,9 +46,13 @@ export const taskValidated = (t: import('./models').AgreementTask) =>
   taskReports(t)
     .filter((r) => r.status === 'validated')
     .reduce((n, r) => n + r.units, 0);
+export const reportAccounted = (r: import('./models').UnitReport) =>
+  r.status !== 'rejected' ||
+  r.dispute?.status === 'open' ||
+  r.dispute?.resolution === 'unverifiable';
 export const taskReported = (t: import('./models').AgreementTask) =>
   taskReports(t)
-    .filter((r) => r.status !== 'rejected')
+    .filter(reportAccounted)
     .reduce((n, r) => n + r.units, 0);
 export const overdueDays = (a: Agreement, today: string) =>
   a.status === 'active'
@@ -80,7 +84,7 @@ export function penaltyUnits(a: Agreement, today: string): number {
         (t) =>
           addDays(t.dueDate ?? a.dueDate!, p.graceDays) < d &&
           taskReports(t)
-            .filter((r) => r.status !== 'rejected' && r.submittedAt < d)
+            .filter((r) => reportAccounted(r) && r.submittedAt < d)
             .reduce((n, r) => n + r.units, 0) < (t.units ?? 1)
       )
     )
@@ -92,7 +96,7 @@ export function penaltyUnits(a: Agreement, today: string): number {
 export const penaltyValidated = (a: Agreement) =>
   (a.penaltyReports ?? []).filter((r) => r.status === 'validated').reduce((n, r) => n + r.units, 0);
 export const penaltyReported = (a: Agreement) =>
-  (a.penaltyReports ?? []).filter((r) => r.status !== 'rejected').reduce((n, r) => n + r.units, 0);
+  (a.penaltyReports ?? []).filter(reportAccounted).reduce((n, r) => n + r.units, 0);
 export const penaltyDeadline = (a: Agreement) =>
   a.latePolicy && a.dueDate
     ? addDays(

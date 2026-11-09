@@ -42,6 +42,10 @@ Las unidades adicionales por demora son opcionales, con límite y plazo; no se c
 
 Consultar [reglas, permisos, estados, investigación y recorrido completo](docs/REGLAS-FAMILIA-Y-PRESTAMOS.md). Los perfiles de ejemplo incluyen historiales ficticios diferentes; un nuevo hijo comienza sin historial.
 
+Cada acuerdo distingue cumplimiento y calidad de evidencia. Los reportes tienen fecha original, fecha declarada opcional y revisión separada; el silencio de 14 días se muestra como resultado no verificable, sin completar ni castigar automáticamente. Hay recordatorios internos y solicitudes de revisión de observaciones. No existe selección de éxitos para enviar a un banco. Las imágenes no se solicitan en este piloto.
+
+**Documento clave: [ORIGEN](docs/CLAVE-ORIGEN.md)** reúne los flujos implementados, la investigación sobre fotos y alternativas, los límites legales/técnicos y los supuestos de seguridad de producción.
+
 ## Qué funciona
 
 - Inicio, sueños, ahorro protegido, aprendizaje, familia y perfil.

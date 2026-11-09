@@ -226,7 +226,7 @@
             <div class="parent-metrics">
               <div class="metric-primary">
                 <strong>{{ m.onTimeRate === null ? '—' : m.onTimeRate + '%' }}</strong
-                ><span>de acuerdos base completados en plazo</span
+                ><span>con reportes base confirmados dentro de plazo</span
                 ><small>{{ m.onTime }} de {{ m.completed }} acuerdos · plazos vigentes</small>
               </div>
               <div class="metrics-grid">
@@ -264,7 +264,10 @@
                     : 'Estos datos describen el pasado, no garantizan el próximo resultado.'
                 }}
                 {{ m.renegotiations }} ampliaciones aceptadas. Los retrasos registrados no se borran
-                al ampliar el plazo. No es un historial crediticio.
+                al ampliar el plazo. La puntualidad usa la fecha del reporte, no la fecha declarada
+                de la actividad. Son declaraciones familiares, no verificaciones independientes ni
+                un historial crediticio. Los reportes sin revisión no se cuentan como acuerdos
+                completados.
               </p>
             </div>
           }

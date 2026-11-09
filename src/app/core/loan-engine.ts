@@ -22,6 +22,7 @@ import {
   validDate,
   dayDifference,
   dateLabel,
+  reportAccounted,
 } from './agreement-rules';
 
 export type LoanCommand =
@@ -29,7 +30,23 @@ export type LoanCommand =
   | { type: 'offer'; id?: string; title: string; goalId?: number; terms: LoanTerms }
   | { type: 'decline'; id: string; reason: string }
   | { type: 'accept'; id: string; accept: boolean }
-  | { type: 'report'; id: string; taskId: string; units: number }
+  | {
+      type: 'report';
+      id: string;
+      taskId: string;
+      units: number;
+      performedAt?: string;
+      note?: string;
+    }
+  | { type: 'dispute'; id: string; taskId: string; reportId: string; reason: string }
+  | {
+      type: 'resolve-dispute';
+      id: string;
+      taskId: string;
+      reportId: string;
+      resolution: 'confirmed' | 'unverifiable';
+      response: string;
+    }
   | {
       type: 'review';
       id: string;
@@ -101,7 +118,7 @@ function syncTask(t: AgreementTask) {
         ? 'submitted'
         : 'pending';
   t.submittedAt = reports
-    .filter((r) => r.status !== 'rejected')
+    .filter(reportAccounted)
     .map((r) => r.submittedAt)
     .sort()
     .at(-1);
@@ -148,7 +165,7 @@ export function executeLoanCommand(
   const child = f.children.find((child) => child.id === childId);
   if (!child || (role === 'child' && actorChildId !== childId))
     return 'Ese perfil no está disponible en esta vista.';
-  const parentActions = ['offer', 'decline', 'review', 'extend', 'late-policy'];
+  const parentActions = ['offer', 'decline', 'review', 'extend', 'late-policy', 'resolve-dispute'];
   if ((parentActions.includes(c.type) ? 'parent' : 'child') !== role)
     return 'Esta acción corresponde a la otra vista de la familia.';
   const open = f.agreements.filter((a) => a.childId === childId && agreementOpen(a));
@@ -264,7 +281,8 @@ export function executeLoanCommand(
     a.acceptedAt = f.today;
     a.tasks.forEach(
       (t, i) =>
-        (t.dueDate = addDays(f.today, (a.firstDueDays ?? a.days) + i * (a.intervalDays ?? 1)))
+        (t.originalDueDate = t.dueDate =
+          addDays(f.today, (a.firstDueDays ?? a.days) + i * (a.intervalDays ?? 1)))
     );
     a.dueDate = a.tasks.at(-1)!.dueDate;
     a.originalDueDate = a.dueDate;
@@ -282,6 +300,13 @@ export function executeLoanCommand(
   if (a.status !== 'active') return 'Este préstamo no está abierto. Su historial se conserva.';
   if (c.type === 'report') {
     if (!integer(c.units, 1, 1000)) return 'Indica una cantidad entera de unidades.';
+    if (
+      c.performedAt &&
+      (!validDate(c.performedAt) || c.performedAt > f.today || c.performedAt < a.acceptedAt!)
+    )
+      return 'La fecha declarada debe estar entre la aceptación y hoy. No cambia la fecha del reporte.';
+    if ((c.note?.length ?? 0) > 180)
+      return 'Usa una nota de hasta 180 caracteres, sin datos personales.';
     if (c.taskId === 'penalty') {
       if (c.units > penaltyUnits(a, f.today) - penaltyReported(a))
         return 'La cantidad supera las unidades adicionales pendientes.';
@@ -290,6 +315,8 @@ export function executeLoanCommand(
         units: c.units,
         submittedAt: f.today,
         status: 'submitted',
+        performedAt: c.performedAt ?? f.today,
+        note: c.note?.trim(),
       });
     } else {
       const task = a.tasks.find((t) => t.id === c.taskId);
@@ -302,10 +329,74 @@ export function executeLoanCommand(
         units: c.units,
         submittedAt: f.today,
         status: 'submitted',
+        performedAt: c.performedAt ?? f.today,
+        note: c.note?.trim(),
       });
       syncTask(task);
     }
     event(a, f, role, `Reportó ${c.units} unidad(es). En espera de revisión familiar.`);
+    return '';
+  }
+  if (c.type === 'dispute' || c.type === 'resolve-dispute') {
+    const task = a.tasks.find((t) => t.id === c.taskId);
+    if (task && !task.reports) task.reports = taskReports(task);
+    const reports = c.taskId === 'penalty' ? a.penaltyReports : task?.reports;
+    const r = reports?.find((r) => r.id === c.reportId);
+    if (!r) return 'La entrega no pertenece a este préstamo.';
+    if (c.type === 'dispute') {
+      if (r.status !== 'rejected' || r.dispute)
+        return 'Solo puedes solicitar una revisión de una entrega observada sin revisión previa.';
+      if (!c.reason.trim() || c.reason.length > 180)
+        return 'Explica qué quieres revisar en hasta 180 caracteres.';
+      const accounted = reports!.filter(reportAccounted).reduce((n, x) => n + x.units, 0);
+      const limit = task ? (task.units ?? 1) : penaltyUnits(a, f.today);
+      if (accounted + r.units > limit)
+        return 'Ya registraste una entrega de reemplazo. Revisen su resultado para no contar las unidades dos veces.';
+      r.dispute = { reason: c.reason.trim(), openedAt: f.today, status: 'open' };
+      r.reviews ??= r.validatedAt
+        ? [{ at: r.validatedAt, accepted: false, feedback: r.feedback ?? 'Observación familiar' }]
+        : [];
+      event(
+        a,
+        f,
+        role,
+        'Solicitó revisar una observación familiar. El resultado queda cuestionado, sin atribuir incumplimiento externo.'
+      );
+    } else {
+      if (
+        !r.dispute ||
+        (r.dispute.status !== 'open' &&
+          !(r.dispute.resolution === 'unverifiable' && c.resolution === 'confirmed'))
+      )
+        return 'No hay una revisión solicitada pendiente.';
+      if (
+        !['confirmed', 'unverifiable'].includes(c.resolution) ||
+        !c.response.trim() ||
+        c.response.length > 180
+      )
+        return 'Explica el resultado de la conversación en hasta 180 caracteres.';
+      Object.assign(r.dispute, {
+        status: 'resolved',
+        resolution: c.resolution,
+        resolvedAt: f.today,
+        response: c.response.trim(),
+      });
+      if (c.resolution === 'confirmed') {
+        r.status = 'validated';
+        r.validatedAt = f.today;
+        (r.reviews ??= []).push({ at: f.today, accepted: true, feedback: c.response.trim() });
+      }
+      event(
+        a,
+        f,
+        role,
+        c.resolution === 'confirmed'
+          ? 'Tras conversar, confirmó la entrega. Se conserva el reporte original y la observación anterior.'
+          : 'La conversación quedó sin conclusión verificable. No se confirma ni se atribuye incumplimiento externo.'
+      );
+    }
+    if (task) syncTask(task);
+    finishIfPaid(f, a);
     return '';
   }
   if (c.type === 'review') {
@@ -315,6 +406,8 @@ export function executeLoanCommand(
     )?.find((r) => r.id === c.reportId);
     if (!report || report.status !== 'submitted')
       return 'Esta entrega ya fue revisada o no pertenece al préstamo.';
+    if (report.dispute?.status === 'open')
+      return 'Resuelve primero la revisión solicitada, sin borrar la observación.';
     if (task && !task.reports) task.reports = taskReports(task);
     const target = (c.taskId === 'penalty' ? a.penaltyReports : task?.reports)!.find(
       (r) => r.id === c.reportId
@@ -324,6 +417,7 @@ export function executeLoanCommand(
     target.feedback = c.accept
       ? 'Entrega confirmada.'
       : c.feedback.trim().slice(0, 180) || 'Revisemos esta entrega juntos.';
+    (target.reviews ??= []).push({ at: f.today, accepted: c.accept, feedback: target.feedback });
     if (task) syncTask(task);
     event(
       a,
@@ -364,6 +458,7 @@ export function executeLoanCommand(
       const shift = dayDifference(a.proposedDueDate, a.dueDate!);
       const accrued = penaltyUnits(a, f.today);
       a.tasks.forEach((t) => {
+        t.originalDueDate ??= t.dueDate ?? a.dueDate;
         if (taskValidated(t) < (t.units ?? 1)) t.dueDate = addDays(t.dueDate ?? a.dueDate!, shift);
       });
       a.dueDate = a.proposedDueDate;
