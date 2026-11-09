@@ -6,11 +6,12 @@ import { addDays } from './core/agreement-rules';
 import { IconComponent } from './shared/icon.component';
 import { MobileComponent } from './mobile/mobile.component';
 import { ParentComponent } from './parent/parent.component';
+import { BrandMarkComponent } from './shared/brand-mark.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [FormsModule, IconComponent, MobileComponent, ParentComponent],
+  imports: [FormsModule, IconComponent, MobileComponent, ParentComponent, BrandMarkComponent],
   templateUrl: './app.component.html',
 })
 export class AppComponent {

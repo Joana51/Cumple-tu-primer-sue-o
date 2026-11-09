@@ -337,19 +337,39 @@ a {
   font-weight: 800;
 }
 .brand-symbol {
-  width: 34px;
-  height: 36px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--navy);
   color: #ffab38;
   border-radius: 10px;
-  transform: rotate(-7deg);
 }
-.brand-symbol app-icon {
-  width: 23px;
-  height: 23px;
+.brand-symbol app-brand-mark {
+  width: 48px;
+  height: 48px;
+}
+.story-panel > .story-brand-mark {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 18px;
+  filter: drop-shadow(0 8px 12px #173e7220);
+}
+.independent-mark app-brand-mark {
+  width: 36px;
+  height: 36px;
+}
+.independence-notice > app-brand-mark {
+  width: 24px;
+  height: 24px;
+}
+@media (max-height: 800px) {
+  .story-panel > .story-brand-mark {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 10px;
+  }
 }
 .demo-layout {
   width: min(1280px, 94%);
